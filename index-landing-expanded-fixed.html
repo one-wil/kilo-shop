@@ -5029,56 +5029,20 @@
         <!-- Page 1: Products Gallery -->
         <div id="page1" class="page active">
 
-<!-- Premium Landing Hero -->
-<section class="landing-hero" id="landingHero">
-  <div class="landing-hero-inner">
-    <div class="landing-copy">
-      <div class="landing-eyebrow"><i class="fas fa-sparkles"></i><span id="landingEyebrow">تشكيلة مختارة بعناية</span></div>
-      <h1 id="landingTitle">اكتشف <span>مجموعتنا الجديدة</span></h1>
-      <p id="landingDescription">اختَر موديلك المفضل بسهولة، اكتشف التفاصيل والمقاسات، ثم أرسل طلبك في خطوات بسيطة وسريعة.</p>
-      <div class="landing-actions">
-        <button type="button" class="landing-btn landing-btn-primary" id="landingShopBtn"><i class="fas fa-bag-shopping"></i> اكتشف المنتجات</button>
-        <button type="button" class="landing-btn landing-btn-ghost" id="landingCartBtn"><i class="fas fa-cart-shopping"></i> سلة التسوق</button>
-      </div>
-      <div class="landing-points">
-        <span><i class="fas fa-check-circle"></i> طلب سريع</span>
-        <span><i class="fas fa-truck"></i> توصيل حسب الولاية</span>
-        <span><i class="fas fa-headset"></i> دعم مباشر</span>
-      </div>
-    </div>
-    <div class="landing-feature">
-      <div class="landing-feature-card">
-        <img id="landingFeatureImage" src="" alt="منتج مميز" loading="eager">
-        <div class="landing-feature-badge"><i class="fas fa-star"></i> منتج مميز</div>
-        <div class="landing-feature-info">
-          <div class="landing-feature-name" id="landingFeatureName">منتج مميز</div>
-          <div class="landing-feature-price" id="landingFeaturePrice"></div>
-        </div>
-      </div>
-    </div>
+<!-- ===== Store Brand Header ===== -->
+<div class="store-brand-hero" id="storeBrandHero">
+  <div class="store-brand-logo-wrap">
+    <img id="storeBrandLogo" class="store-brand-logo" src="" alt="شعار المتجر">
+    <div class="store-brand-logo-fallback" id="storeBrandLogoFallback"><i class="fas fa-store"></i></div>
   </div>
-</section>
-<div class="landing-benefits" aria-label="مزايا المتجر">
-  <div class="landing-benefit"><i class="fas fa-shield-halved"></i><div><strong>تجربة طلب سهلة</strong><span>خطوات واضحة حتى تأكيد الطلب</span></div></div>
-  <div class="landing-benefit"><i class="fas fa-truck-fast"></i><div><strong>توصيل مرن</strong><span>خيارات التوصيل حسب الولاية</span></div></div>
-  <div class="landing-benefit"><i class="fas fa-comments"></i><div><strong>تواصل مباشر</strong><span>نحن هنا لمساعدتك</span></div></div>
+  <div class="store-brand-copy">
+    <div class="store-brand-kicker"><i class="fas fa-sparkles"></i> مرحبًا بكم</div>
+    <h1 id="storeBrandName">اسم المتجر</h1>
+    <p id="storeBrandTagline">تشكيلة مميزة بانتظارك</p>
+    <div class="store-brand-line"></div>
+  </div>
 </div>
-<div class="landing-section-head"><div><h2>اكتشف المجموعة</h2><p>اختر المنتج، ثم اضغط عليه لمشاهدة التفاصيل والطلب.</p></div></div>
             <section class="models-section">
-                <!-- Large Logo in Center with Two Circles -->
-                <div class="logo-container">
-                    <div class="logo-wrapper">
-                        <div class="circle-left">جودة ممتازة</div>
-                        <img src="" alt="Store Logo" class="store-logo" id="storeLogoMain" style="display: none;">
-                        <div class="circle-right">أسعار تنافسية</div>
-                    </div>
-                </div>
-                
-                <h2 class="section-title" id="storeTitleHeader">
-                    <i class="fas fa-crown"></i>
-                    <span id="storeTitleText"></span>
-                </h2>
-                
                 <!-- Social Media -->
                 <div class="social-media">
                     <a href="#" class="social-icon whatsapp" id="whatsappBtn" target="_blank" style="display: none;">
@@ -6264,31 +6228,17 @@
                 }
                 
                 card.innerHTML = `
-                    <article class="premium-product-card" onclick="showProductDetails('${key}')">
-                        <div class="premium-product-media">
-                            <img src="${product.image}" alt="${product.name}" class="model-image" loading="lazy"
-                                 onerror="this.src='https://via.placeholder.com/600x750?text=Image+Not+Available'">
-                            <div class="premium-product-overlay"></div>
-                            <div class="premium-product-top">
-                                <span class="premium-product-tag"><i class="fas fa-star"></i> اختيار مميز</span>
-                                ${orderBadge ? `<span class="premium-order">${orderBadge}</span>` : ''}
-                            </div>
-                            <div class="premium-product-badges">
-                                ${(hasPromoDiscount && STORE_CONFIG.DISCOUNTS && STORE_CONFIG.DISCOUNTS.enablePromotionalDiscount) ? `
-                                    <span class="premium-badge premium-badge-sale"><i class="fas fa-percentage"></i> خصم ${STORE_CONFIG.DISCOUNTS.promotionalDiscountPercent || 0}%</span>
-                                ` : ''}
-                                ${(isFreeDeliveryProduct && freeDeliveryText) ? `
-                                    <span class="premium-badge premium-badge-delivery"><i class="fas fa-truck-fast"></i> ${freeDeliveryText}</span>
-                                ` : ''}
-                            </div>
-                            <!-- تم إزالة زر الإضافة السريعة (أيقونة السلة) من هنا -->
-                            <div class="premium-view-hint"><i class="fas fa-expand-alt"></i> اكتشف المنتج</div>
+                    <article class="premium-product-card split-product-card" data-product-card="${key}">
+                        <div class="split-product-media" role="button" tabindex="0" aria-label="عرض معلومات ${product.name || 'المنتج'}">
+                            <div class="split-product-half split-half-a"><img src="${product.image}" alt="${product.name}" loading="lazy"></div>
+                            <div class="split-product-half split-half-b"><img src="${product.image}" alt="${product.name}" loading="lazy"></div>
+                            <div class="split-product-divider"></div>
+                            <div class="split-product-hint"><i class="fas fa-hand-pointer"></i><span>اضغط لاكتشاف المنتج</span></div>
                         </div>
-
-                        <div class="model-info premium-product-info">
+                        <div class="split-product-info" aria-hidden="true">
                             <div class="premium-product-heading">
                                 <div>
-                                    <span class="premium-kicker">COLLECTION</span>
+                                    <span class="premium-kicker">${orderNumber ? 'MODEL #'+orderNumber : 'COLLECTION'}</span>
                                     <h3 class="model-name">${product.name}</h3>
                                 </div>
                                 <div class="premium-price">
@@ -6296,42 +6246,39 @@
                                     <span class="discounted-price">${discountInfo.finalPrice} <small>دج</small></span>
                                 </div>
                             </div>
-                            <p class="model-description premium-description">${product.description}</p>
+                            <p class="model-description premium-description">${product.description || ''}</p>
                             <div class="premium-specs">
                                 <span><i class="fas fa-ruler-combined"></i> ${sizesText}</span>
                                 <span><i class="fas fa-palette"></i> ${colorsText}</span>
                             </div>
-                            ${(hasQuantityDiscount && quantityDiscountMessage) ? `
-                                <div class="premium-offer"><i class="fas fa-gift"></i><span>${quantityDiscountMessage}</span></div>
-                            ` : ''}
-                            <div class="inline-product-choices" onclick="event.stopPropagation()">
-                                ${availableColors.length ? `
-                                <div class="inline-choice-group">
-                                    <div class="inline-choice-title"><i class="fas fa-palette"></i> اللون</div>
-                                    <div class="inline-color-list" data-inline-colors="${key}">
-                                        ${availableColors.map((color, ci) => `<button type="button" class="inline-color-btn" data-color="${String(color).replace(/"/g,'&quot;')}" onclick="selectInlineProductColor(event, '${key}', this)">${color}</button>`).join('')}
-                                    </div>
-                                </div>` : ''}
-                                ${availableSizes.length ? `
-                                <div class="inline-choice-group">
-                                    <div class="inline-choice-title"><i class="fas fa-ruler-combined"></i> المقاس</div>
-                                    <div class="inline-size-list" data-inline-sizes="${key}">
-                                        ${availableSizes.map(size => `<button type="button" class="inline-size-btn" data-size="${String(size).replace(/"/g,'&quot;')}" onclick="selectInlineProductSize(event, '${key}', this)">${size}</button>`).join('')}
-                                    </div>
-                                </div>` : ''}
-                                <button type="button" class="inline-add-btn" data-inline-add="${key}" onclick="addInlineProductToCart(event, '${key}')">
-                                    <i class="fas fa-cart-plus"></i><span>أضف إلى السلة</span>
-                                </button>
-                            </div>
-                            <div class="premium-card-cta" onclick="showProductDetails('${key}')">
-                                <span>عرض التفاصيل 🛍️</span>
-                                <span class="premium-arrow"><i class="fas fa-arrow-left"></i></span>
-                            </div>
+                            ${(hasQuantityDiscount && quantityDiscountMessage) ? `<div class="premium-offer"><i class="fas fa-gift"></i><span>${quantityDiscountMessage}</span></div>` : ''}
+                            ${(hasPromoDiscount && STORE_CONFIG.DISCOUNTS && STORE_CONFIG.DISCOUNTS.enablePromotionalDiscount) ? `<div class="premium-offer premium-offer-sale"><i class="fas fa-percentage"></i><span>خصم ${STORE_CONFIG.DISCOUNTS.promotionalDiscountPercent || 0}%</span></div>` : ''}
+                            ${(isFreeDeliveryProduct && freeDeliveryText) ? `<div class="premium-offer premium-offer-delivery"><i class="fas fa-truck-fast"></i><span>${freeDeliveryText}</span></div>` : ''}
+                            <button type="button" class="premium-details-btn" onclick="event.stopPropagation(); showProductDetails('${key}')">
+                                <span>تفاصيل المنتج</span><i class="fas fa-arrow-left"></i>
+                            </button>
                         </div>
                     </article>
                 `;
 
-                
+                const productCard = card.querySelector('.split-product-card');
+                const media = card.querySelector('.split-product-media');
+                const info = card.querySelector('.split-product-info');
+                const restoreCard = () => {
+                    const expanded = productCard.classList.toggle('is-restored');
+                    info.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+                    if (expanded) {
+                        setTimeout(() => info.scrollIntoView({behavior:'smooth', block:'nearest'}), 120);
+                    }
+                };
+                media.addEventListener('click', restoreCard);
+                media.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); restoreCard(); }
+                });
+                productCard.addEventListener('click', (e) => {
+                    if (!productCard.classList.contains('is-restored')) return;
+                    if (e.target.closest('.premium-details-btn')) return;
+                });
                 grid.appendChild(card);
                 updateInlineAddButton(key);
             });
@@ -8294,9 +8241,14 @@ updateDeliveryCost();
                 const storeName = STORE_CONFIG.STORE_INFO.name;
                 const storeTagline = STORE_CONFIG.STORE_INFO.tagline || 'متجر ملابس فاخرة';
                 
-                document.getElementById('storeNameHeader').textContent = storeName;
-                document.getElementById('storeTitleText').textContent = storeTagline;
-                document.getElementById('storeNameFooter').textContent = storeName;
+                const headerName = document.getElementById('storeNameHeader');
+                if (headerName) headerName.textContent = storeName;
+                const brandName = document.getElementById('storeBrandName');
+                const brandTagline = document.getElementById('storeBrandTagline');
+                if (brandName) brandName.textContent = storeName;
+                if (brandTagline) brandTagline.textContent = storeTagline;
+                const footerName = document.getElementById('storeNameFooter');
+                if (footerName) footerName.textContent = storeName;
                 
                 document.title = `🛒 ${storeName} - ${storeTagline}`;
                 document.getElementById('ogTitle').content = `🛒 ${storeName} - ${storeTagline}`;
@@ -8307,20 +8259,23 @@ updateDeliveryCost();
         }
 
         function loadStoreLogo() {
-            const storeLogoMain = document.getElementById('storeLogoMain');
+            const storeLogoBrand = document.getElementById('storeBrandLogo');
+            const storeLogoFallback = document.getElementById('storeBrandLogoFallback');
             const storeLogoFooter = document.getElementById('storeLogoFooter');
             
             if (STORE_CONFIG.STORE_INFO && STORE_CONFIG.STORE_INFO.logo) {
                 const logoUrl = STORE_CONFIG.STORE_INFO.logo;
                 
-                [storeLogoMain, storeLogoFooter].forEach(logo => {
+                [storeLogoBrand, storeLogoFooter].forEach(logo => {
                     if (logo) {
                         logo.src = logoUrl;
                         logo.onload = function() {
                             logo.style.display = 'block';
+                            if (logo === storeLogoBrand && storeLogoFallback) storeLogoFallback.style.display = 'none';
                         };
                         logo.onerror = function() {
                             logo.style.display = 'none';
+                            if (logo === storeLogoBrand && storeLogoFallback) storeLogoFallback.style.display = 'grid';
                         };
                     }
                 });
@@ -10534,6 +10489,31 @@ html[data-store-template="PRO_PRODUCT_LANDING"] #ageOptions .size-option-small {
 .landing-section-head{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:4px 0 12px}.landing-section-head h2{margin:0;font-size:1.15rem;font-weight:950;color:#10243a}.landing-section-head p{margin:0;color:#7a8490;font-size:.68rem}
 @media(max-width:760px){.landing-hero{border-radius:21px;margin-top:6px}.landing-hero-inner{grid-template-columns:1fr;padding:24px 17px;gap:12px}.landing-copy{text-align:center}.landing-copy p{margin-left:auto;margin-right:auto;font-size:.78rem}.landing-actions{justify-content:center}.landing-points{justify-content:center;gap:9px}.landing-feature{min-height:245px}.landing-feature-card{width:min(82vw,320px)}.landing-benefits{grid-template-columns:1fr 1fr}.landing-benefit:last-child{grid-column:1/-1}.landing-benefit{padding:10px}.landing-benefit i{width:30px;height:30px;flex:0 0 30px}}
 @media(max-width:420px){.landing-copy h1{font-size:1.65rem}.landing-feature{min-height:215px}.landing-benefits{gap:7px}.landing-benefit strong{font-size:.66rem}.landing-benefit span{font-size:.54rem}}
+
+/* ===== Simple Storefront Layout — split image cards ===== */
+.store-brand-hero{margin:14px 0 22px;padding:22px 20px 18px;display:flex;align-items:center;justify-content:center;gap:18px;text-align:right;background:linear-gradient(135deg,#ffffff 0%,#f7fbff 55%,#eaf5ff 100%);border:1px solid rgba(0,102,204,.13);border-radius:24px;box-shadow:0 12px 35px rgba(0,71,130,.09);position:relative;overflow:hidden}
+.store-brand-hero:before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(0,153,255,.08);left:-60px;top:-80px}
+.store-brand-logo-wrap{position:relative;width:92px;height:92px;flex:0 0 92px;z-index:1}
+.store-brand-logo{width:92px;height:92px;object-fit:contain;border-radius:22px;background:#fff;border:1px solid #dce8f3;padding:8px;box-shadow:0 8px 22px rgba(0,75,135,.12);display:none}
+.store-brand-logo-fallback{width:92px;height:92px;border-radius:22px;background:linear-gradient(145deg,#0066cc,#0099ff);color:#fff;place-items:center;font-size:2rem;box-shadow:0 8px 22px rgba(0,102,204,.25)}
+.store-brand-copy{position:relative;z-index:1;min-width:0}.store-brand-kicker{font-size:.62rem;font-weight:900;color:#0075c9;letter-spacing:.8px;margin-bottom:3px}.store-brand-kicker i{margin-left:4px}
+.store-brand-copy h1{margin:0;color:#063e75;font-size:clamp(1.25rem,3.2vw,2rem);line-height:1.15;font-weight:900}.store-brand-copy p{margin:5px 0 0;color:#5d738a;font-size:.78rem;font-weight:600}.store-brand-line{width:70px;height:3px;margin-top:10px;border-radius:99px;background:linear-gradient(90deg,#0066cc,#00b8ff)}
+.split-product-card{cursor:default!important;transform:none!important;box-shadow:0 8px 24px rgba(0,45,90,.08)!important}
+.split-product-card:hover{transform:none!important}
+.split-product-media{position:relative;display:grid;grid-template-columns:1fr 1fr;aspect-ratio:1/1.08;overflow:hidden;background:#eef4fa;cursor:pointer;outline:none}
+.split-product-half{position:relative;overflow:hidden;background:#f7f9fc}.split-product-half img{position:absolute;inset:0;width:200%;height:100%;max-width:none;object-fit:cover;transition:transform .65s cubic-bezier(.2,.8,.2,1),opacity .35s ease}
+.split-half-a img{right:0}.split-half-b img{left:0}.split-product-divider{position:absolute;z-index:3;top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);background:rgba(255,255,255,.9);box-shadow:0 0 12px rgba(0,0,0,.18);transition:.55s ease}
+.split-product-hint{position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);padding:8px 13px;border-radius:999px;background:rgba(3,26,48,.72);color:#fff;border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(8px);font-size:.62rem;font-weight:800;white-space:nowrap;box-shadow:0 8px 20px rgba(0,0,0,.18);transition:.35s ease}
+.split-product-hint i{margin-left:5px;color:#7fe8ff}
+.split-product-info{display:none;padding:13px 13px 14px;background:#fff;border-top:1px solid #e9eff5;gap:8px;min-height:170px}
+.split-product-card.is-restored .split-product-info{display:flex;flex-direction:column;animation:splitInfoReveal .42s ease both}
+.split-product-card.is-restored .split-product-media{aspect-ratio:1/1.02}.split-product-card.is-restored .split-product-divider{left:100%;opacity:0}.split-product-card.is-restored .split-product-hint{opacity:0;transform:translate(-50%,-50%) scale(.85);pointer-events:none}
+.split-product-card.is-restored .split-half-a img{transform:translateX(50%)}.split-product-card.is-restored .split-half-b img{transform:translateX(-50%)}
+.premium-details-btn{margin-top:auto;width:100%;border:0;border-radius:11px;padding:10px 12px;background:linear-gradient(135deg,#0066cc,#008fe8);color:#fff;font-family:inherit;font-weight:900;font-size:.68rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;box-shadow:0 7px 18px rgba(0,102,204,.2)}
+.premium-details-btn i{font-size:.65rem}.premium-offer-sale{background:#fff0f1;color:#b4233a}.premium-offer-delivery{background:#eefaf4;color:#16734a}
+@keyframes splitInfoReveal{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:700px){.store-brand-hero{padding:17px 14px;gap:12px;border-radius:19px}.store-brand-logo-wrap,.store-brand-logo,.store-brand-logo-fallback{width:70px;height:70px;flex-basis:70px}.store-brand-logo-fallback{font-size:1.45rem}.store-brand-copy h1{font-size:1.18rem}.store-brand-copy p{font-size:.65rem}.split-product-info{padding:10px;min-height:155px}.premium-product-heading{gap:6px}.premium-product-info .model-name{font-size:.67rem}.premium-description{font-size:.59rem}.premium-specs{font-size:.54rem}.premium-details-btn{font-size:.59rem;padding:9px 10px}}
+@media(max-width:380px){.models-grid{gap:.55rem}.store-brand-hero{margin-top:8px}.store-brand-logo-wrap,.store-brand-logo,.store-brand-logo-fallback{width:60px;height:60px;flex-basis:60px}.store-brand-copy h1{font-size:1.05rem}.split-product-hint{font-size:.52rem;padding:7px 9px}.split-product-info{min-height:150px}}
 </style>
 
 
@@ -10791,65 +10771,20 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
 
 
 <script>
-/* ===== Landing Page Data Bridge ===== */
+/* ===== Store Brand Bridge ===== */
 (function(){
-  function money(v){
-    const n=Number(v)||0;
-    return n.toLocaleString('fr-DZ')+' دج';
-  }
-  function firstImage(p){
-    if(!p) return '';
-    const candidates=[];
-    if(Array.isArray(p.images)) candidates.push(...p.images);
-    if(Array.isArray(p.gallery)) candidates.push(...p.gallery);
-    if(p.image) candidates.push(p.image);
-    if(p.mainImage) candidates.push(p.mainImage);
-    if(typeof p.images==='string') candidates.push(p.images);
-    return candidates.find(Boolean)||'';
-  }
-  function initLanding(){
+  function initBrand(){
     if(typeof STORE_CONFIG==='undefined') return;
     const info=STORE_CONFIG.STORE_INFO||{};
-    const products=STORE_CONFIG.PRODUCTS||{};
-    const title=info.name||'متجرك';
-    const tagline=info.tagline||'اكتشف مجموعتنا الجديدة';
-    const titleEl=document.getElementById('landingTitle');
-    const eyebrow=document.getElementById('landingEyebrow');
-    const desc=document.getElementById('landingDescription');
-    if(eyebrow) eyebrow.textContent=title;
-    if(titleEl) titleEl.innerHTML='اكتشف <span>'+String(tagline).replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>';
-    if(desc) desc.textContent='تسوّق '+title+' بسهولة. اكتشف المنتجات، اختر التفاصيل المناسبة، ثم أرسل طلبك في خطوات بسيطة وسريعة.';
-
-    const keys=Object.keys(products);
-    const featureKey=keys.find(k=>products[k]&&firstImage(products[k]))||keys[0];
-    const p=featureKey?products[featureKey]:null;
-    if(p){
-      const img=document.getElementById('landingFeatureImage');
-      const name=document.getElementById('landingFeatureName');
-      const price=document.getElementById('landingFeaturePrice');
-      const src=firstImage(p);
-      if(img&&src) img.src=src;
-      if(name) name.textContent=p.name||'منتج مميز';
-      if(price) price.textContent=money(p.price);
-      const card=document.querySelector('.landing-feature-card');
-      if(card&&featureKey!=null){
-        card.style.cursor='pointer';
-        card.addEventListener('click',function(){
-          if(typeof showProductDetails==='function') showProductDetails(featureKey);
-        });
-      }
-    }
-    const shop=document.getElementById('landingShopBtn');
-    if(shop) shop.addEventListener('click',function(){
-      const grid=document.getElementById('modelsGrid');
-      if(grid) grid.scrollIntoView({behavior:'smooth',block:'start'});
-    });
-    const cart=document.getElementById('landingCartBtn');
-    if(cart) cart.addEventListener('click',function(){
-      if(typeof switchPage==='function') switchPage('page2');
-    });
+    const name=document.getElementById('storeBrandName');
+    const tag=document.getElementById('storeBrandTagline');
+    const logo=document.getElementById('storeBrandLogo');
+    const fallback=document.getElementById('storeBrandLogoFallback');
+    if(name) name.textContent=info.name||'متجرنا';
+    if(tag) tag.textContent=info.tagline||'تشكيلة مميزة بانتظارك';
+    if(logo && info.logo){ logo.src=info.logo; logo.style.display='block'; logo.onload=()=>{if(fallback)fallback.style.display='none'}; logo.onerror=()=>{logo.style.display='none';if(fallback)fallback.style.display='grid'}; }
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initLanding); else initLanding();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initBrand); else initBrand();
 })();
 </script>
 </body>
