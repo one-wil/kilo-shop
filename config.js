@@ -50,8 +50,8 @@ const STORE_CONFIG = {
               "size": "S"
             },
             {
-              "ageFrom": " ",
-              "ageTo": " ",
+              "ageFrom": "",
+              "ageTo": "",
               "size": "M"
             }
           ]
@@ -440,15 +440,17 @@ const STORE_CONFIG = {
   },
   "DISCOUNTS": {
     "enableQuantityDiscount": false,
-    "minQuantityForDiscount": 0,
+    "minQuantityForDiscount": 1,
     "discountPerItem": 0,
     "discountScope": "selected",
     "discountProducts": [],
-    "enablePromotionalDiscount": false,
+    "enablePromotionalDiscount": true,
     "promotionalDiscountPercent": 0,
     "promotionalDiscountedPrice": null,
     "promoDiscountScope": "selected",
-    "promoDiscountProducts": []
+    "promoDiscountProducts": [
+      1789581423689
+    ]
   },
   "STORE_INFO": {
     "name": "Kilo-shop",
