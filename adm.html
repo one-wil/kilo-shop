@@ -8552,7 +8552,7 @@ function journeyLabel(x){
  if(raw.includes('checkout_submit_attempt')||raw.includes('submit')||raw.includes('إرسال')||raw.includes('تأكيد')||raw.includes('طلب'))return 'إرسال الطلب';
  if(raw.includes('purchase')||raw.includes('شراء'))return 'إتمام الطلب';
  if(raw.includes('abandon')||raw.includes('غير مكتمل'))return 'إتمام غير مكتمل';
- return String(x?.label||'إتمام الطلب');
+ return String(x?.label||'إستقبال الطلب');
 }
 function journeyFromStage(v){
  const n=Number(v);
