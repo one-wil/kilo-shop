@@ -1257,14 +1257,14 @@ function buildCheckoutAnalyticsResult_(events, storeKey) {
     generatedAt:new Date().toISOString(),
     summary:{visitors:visitors,sessions:sessionCount,checkoutSessions:begin,stage1:home,stage2:product,stage3:begin,stage4:wilaya,stage5:delivery,stage6:details,submitAttempts:attempts,purchases:purchases,conversionRate:pct(purchases,sessionCount),abandoned:abandoned,abandonedRate:pct(abandoned,sessionCount),explicitAbandoned:explicitAbandoned},
     funnel:[
-      {stage:1,label:'زيارة الصفحة الرئيسية / المنتجات',sessions:home,rate:pct(home,visitors)},
-      {stage:2,label:'عرض تفاصيل المنتج',sessions:product,rate:pct(product,visitors)},
-      {stage:3,label:'السلة / بدء Checkout',sessions:begin,rate:pct(begin,visitors)},
-      {stage:4,label:'اختيار الولاية',sessions:wilaya,rate:pct(wilaya,begin)},
-      {stage:5,label:'طريقة التوصيل',sessions:delivery,rate:pct(delivery,begin)},
-      {stage:6,label:'بيانات العميل',sessions:details,rate:pct(details,begin)},
-      {stage:7,label:'إرسال الطلب',sessions:attempts,rate:pct(attempts,begin)},
-      {stage:8,label:'إتمام الطلب',sessions:purchases,rate:pct(purchases,begin)}
+      {stage:1,label:'زيارة الصفحة الرئيسية / المنتجات',sessions:home,rate:pct(home,sessionCount)},
+      {stage:2,label:'عرض تفاصيل المنتج',sessions:product,rate:pct(product,sessionCount)},
+      {stage:3,label:'السلة / بدء Checkout',sessions:begin,rate:pct(begin,sessionCount)},
+      {stage:4,label:'اختيار الولاية',sessions:wilaya,rate:pct(wilaya,sessionCount)},
+      {stage:5,label:'طريقة التوصيل',sessions:delivery,rate:pct(delivery,sessionCount)},
+      {stage:6,label:'بيانات العميل',sessions:details,rate:pct(details,sessionCount)},
+      {stage:7,label:'إرسال الطلب',sessions:attempts,rate:pct(attempts,sessionCount)},
+      {stage:8,label:'إتمام الطلب',sessions:purchases,rate:pct(purchases,sessionCount)}
     ],
     byWilaya:Object.entries(byWilaya).map(([name,v])=>({name,...v,conversionRate:pct(v.purchases,v.sessions)})).sort((a,b)=>b.sessions-a.sessions),
     byDelivery:Object.entries(byDelivery).map(([name,v])=>({name,...v,conversionRate:pct(v.purchases,v.sessions)})).sort((a,b)=>b.sessions-a.sessions),
