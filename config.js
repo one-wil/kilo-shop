@@ -1,4 +1,3 @@
-
 // =============================================================================
 // ⚙️ ملف الإعدادات الرئيسي للمتجر
 // =============================================================================
@@ -7,7 +6,7 @@ const STORE_CONFIG = {
   "PRODUCTS": {
     "1789476986031": {
       "name": "لباس أطفال تركي",
-      "price": 300,
+      "price": 3000,
       "description": "",
       "category": "",
       "stock": 0,
@@ -63,7 +62,7 @@ const STORE_CONFIG = {
       },
       "createdAt": "2026-09-15T12:56:26.031Z",
       "image": "https://raw.githubusercontent.com/one-wil/dawn-dz/main/images/product-1789476986031-1789477052559-modal3.jpg",
-      "updatedAt": "2026-09-15T12:58:09.766Z"
+      "updatedAt": "2026-09-22T12:19:18.809Z"
     },
     "1789581423689": {
       "name": " Ensemble polo",
@@ -445,9 +444,9 @@ const STORE_CONFIG = {
     "discountScope": "selected",
     "discountProducts": [],
     "enablePromotionalDiscount": true,
-    "promotionalDiscountPercent": 0,
+    "promotionalDiscountPercent": 10,
     "promotionalDiscountedPrice": null,
-    "promoDiscountScope": "selected",
+    "promoDiscountScope": "all",
     "promoDiscountProducts": [
       1789581423689
     ]
