@@ -3417,7 +3417,7 @@
         
         function checkServerConnection() {
             const session = (typeof smGetSession === 'function') ? smGetSession() : null;
-            return navigator.onLine && !!(session && session.session) && !syncError;
+            return navigator.onLine && !!(session && session.session);
         }
         
         function setSyncError(status) {
