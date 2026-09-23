@@ -195,9 +195,19 @@ async function getTree(env, owner, repo) {
   throw new Error("Branche du template introuvable");
 }
 
+function githubRepoUrl(owner, repo) {
+  return `https://api.github.com/repos/${encodeURIComponent(String(owner || ""))}/${encodeURIComponent(String(repo || ""))}`;
+}
+
 async function getGitHubDefaultBranch(env, owner, repo) {
-  const data = await github(env, `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`);
-  return String(data?.default_branch || "main").trim() || "main";
+  const url = githubRepoUrl(owner, repo);
+  try {
+    const data = await github(env, url);
+    return String(data?.default_branch || "main").trim() || "main";
+  } catch (e) {
+    const message = e?.message || String(e);
+    throw new Error(`${message} | owner=${owner} | repository=${repo} | url=${url}`);
+  }
 }
 
 async function getGitHubFile(env, owner, repo, path, ref = "main") {
@@ -632,6 +642,46 @@ async function adminSessionCheck(request, env) {
   });
 }
 
+/* ---------------- Admin GitHub diagnostic ---------------- */
+
+async function adminGitHubCheck(request, env) {
+  let body;
+  try { body = await request.json(); } catch { return error("Requête invalide", 400); }
+
+  const auth = await authenticateSession(env, body.session);
+  if (!auth.ok) return error(auth.error, 401);
+
+  const owner = String(env.GITHUB_OWNER || "").trim();
+  const repo = String(auth.license.repository || "").trim();
+  const url = githubRepoUrl(owner, repo);
+
+  if (!owner || !repo) {
+    return error("Informations GitHub incomplètes", 500, {
+      step: "validate-repository", owner, repository: repo, url
+    });
+  }
+
+  try {
+    const data = await github(env, url);
+    return success({
+      accessible: true,
+      owner,
+      repository: repo,
+      url,
+      defaultBranch: String(data?.default_branch || "main").trim() || "main",
+      private: data?.private ?? null
+    });
+  } catch (e) {
+    return error("Repository GitHub غير متاح", 502, {
+      step: "github-repository-check",
+      owner,
+      repository: repo,
+      url,
+      message: e?.message || String(e)
+    });
+  }
+}
+
 /* ---------------- Admin config endpoint ---------------- */
 
 async function getAdminConfig(request, env) {
@@ -695,8 +745,10 @@ async function saveAdminConfig(request, env) {
   } catch (e) {
     return error("Impossible de déterminer la branche GitHub", 502, {
       step: "get-default-branch",
-      message: e?.message || String(e),
-      repository: repo
+      owner,
+      repository: repo,
+      url: githubRepoUrl(owner, repo),
+      message: e?.message || String(e)
     });
   }
   const jsonContent = JSON.stringify(body.config, null, 2);
@@ -805,8 +857,11 @@ function updateConfig(newConfig) {
     });
   } catch (e) {
     return error("Échec de la synchronisation GitHub", 502, {
-      message: e?.message || String(e),
+      step: "put-github-file",
+      owner,
       repository: repo,
+      url: githubRepoUrl(owner, repo),
+      message: e?.message || String(e),
       branch,
       paths: ["config/store-config.json", "config.js"]
     });
@@ -1318,6 +1373,10 @@ export default {
 
       if (method === "POST" && path === "/api/admin/session-check") {
         return adminSessionCheck(request, env);
+      }
+
+      if (method === "POST" && path === "/api/admin/github-check") {
+        return adminGitHubCheck(request, env);
       }
 
       if (method === "POST" && path === "/api/admin/config") {
