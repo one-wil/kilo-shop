@@ -677,13 +677,28 @@ async function saveAdminConfig(request, env) {
   const auth = await authenticateSession(env, body.session);
   if (!auth.ok) return error(auth.error, 401);
 
+  /* Lightweight probe: lets the browser verify the exact save route before
+     sending the complete configuration payload. */
+  if (body.probe === true) {
+    return success({ saveEndpoint: true, authenticated: true });
+  }
+
   if (!body.config || typeof body.config !== "object" || Array.isArray(body.config)) {
     return error("Configuration invalide", 400);
   }
 
   const owner = env.GITHUB_OWNER;
   const repo = auth.license.repository;
-  const branch = await getGitHubDefaultBranch(env, owner, repo);
+  let branch;
+  try {
+    branch = await getGitHubDefaultBranch(env, owner, repo);
+  } catch (e) {
+    return error("Impossible de déterminer la branche GitHub", 502, {
+      step: "get-default-branch",
+      message: e?.message || String(e),
+      repository: repo
+    });
+  }
   const jsonContent = JSON.stringify(body.config, null, 2);
   const configJsContent = `// =============================================================================
 // ⚙️ ملف الإعدادات الرئيسي للمتجر
