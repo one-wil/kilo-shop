@@ -1191,6 +1191,8 @@ async function adminOrders(request, env) {
     storeKey,
     storeId: auth.license.storeId,
     filters: body.filters || {},
+    page: Math.max(1, Number(body.page) || 1),
+    pageSize: Math.min(100, Math.max(10, Number(body.pageSize) || 50)),
     orderId: body.orderId || "",
     status: body.status || "",
     note: body.note || ""
