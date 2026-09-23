@@ -3448,7 +3448,9 @@
             const sessionController = new AbortController();
             const sessionTimer = setTimeout(() => sessionController.abort(), 10000);
             try {
-                const r = await fetch(worker + '/api/admin/config', {
+                // اختبار الجلسة فقط. لا نقرأ GitHub هنا حتى نميز بوضوح بين
+                // مشكلة الاتصال/الجلسة ومشكلة قراءة repository.
+                const r = await fetch(worker + '/api/admin/session-check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
                     cache: 'no-store',
@@ -3457,13 +3459,13 @@
                 });
                 const d = await r.json().catch(() => null);
                 if (r.status === 401) throw new Error('جلسة الإدارة غير صالحة أو منتهية. أعد تسجيل الدخول.');
-                if (!r.ok || !d?.success) {
+                if (!r.ok || !d?.success || d?.authenticated !== true) {
                     const detail = d?.details?.message || d?.error || `HTTP ${r.status}`;
                     throw new Error('فشل اختبار جلسة Worker: ' + detail);
                 }
             } catch (e) {
                 if (e?.name === 'AbortError') throw new Error('انتهت مهلة اختبار جلسة Worker (10 ثوانٍ).');
-                if (e instanceof TypeError) throw new Error('Worker متاح، لكن طلب جلسة الإدارة لم يكتمل (Failed to fetch).');
+                if (e instanceof TypeError) throw new Error('Worker متاح، لكن طلب فحص الجلسة لم يكتمل (Failed to fetch).');
                 throw e;
             } finally {
                 clearTimeout(sessionTimer);

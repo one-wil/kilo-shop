@@ -612,6 +612,26 @@ async function githubProxy(request, env) {
   }, result.ok ? 200 : result.status);
 }
 
+/* ---------------- Admin session check ---------------- */
+
+async function adminSessionCheck(request, env) {
+  let body;
+  try { body = await request.json(); } catch { return error("Requête invalide", 400); }
+
+  const token = String(body?.session || "").trim();
+  if (!token) return error("Session manquante", 401);
+
+  const auth = await authenticateSession(env, token);
+  if (!auth.ok) return error(auth.error, 401);
+
+  return success({
+    authenticated: true,
+    repository: auth.license.repository || "",
+    githubOwner: env.GITHUB_OWNER || "",
+    expiresAt: auth.session?.expiresAt || null
+  });
+}
+
 /* ---------------- Admin config endpoint ---------------- */
 
 async function getAdminConfig(request, env) {
@@ -1279,6 +1299,10 @@ export default {
 
       if (method === "POST" && path === "/api/admin/login") {
         return login(request, env);
+      }
+
+      if (method === "POST" && path === "/api/admin/session-check") {
+        return adminSessionCheck(request, env);
       }
 
       if (method === "POST" && path === "/api/admin/config") {
