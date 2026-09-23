@@ -3450,7 +3450,7 @@
             try {
                 const r = await fetch(worker + '/api/admin/config', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
                     cache: 'no-store',
                     signal: sessionController.signal,
                     body: JSON.stringify({ session: session.session })
@@ -7242,7 +7242,7 @@
                 try {
                     response = await fetch(worker + '/api/admin/config/save', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
                         cache: 'no-store',
                         signal: controller.signal,
                         body: JSON.stringify({
@@ -7295,7 +7295,7 @@ async function autoLoadServerConfigDirect() {
                 // Worker هو الذي يقرأ config/store-config.json باستعمال GITHUB_TOKEN.
                 const response = await fetch(worker + '/api/admin/config', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
                     body: JSON.stringify({ session: session.session }),
                     cache: 'no-store'
                 });
@@ -7359,7 +7359,7 @@ async function autoLoadServerConfigDirect() {
                 // القراءة تمر دائماً عبر Worker. لا يوجد GitHub Token في adm.html.
                 const response = await fetch(worker + '/api/admin/config', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
                     body: JSON.stringify({ session: session.session }),
                     cache: 'no-store'
                 });
