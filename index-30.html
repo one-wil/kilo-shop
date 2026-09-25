@@ -7415,9 +7415,41 @@
             return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
         }
 
+        function ensureCommuneSelectControl() {
+            let control = document.getElementById('commune');
+            if (control && control.tagName === 'SELECT') return control;
+            const old = control;
+            control = document.createElement('select');
+            control.id = 'commune';
+            control.name = 'commune';
+            control.required = true;
+            control.autocomplete = 'address-level2';
+            control.onchange = handleCommuneChange;
+            if (old) old.replaceWith(control);
+            return control;
+        }
+
+        function ensureCommuneManualControl() {
+            let control = document.getElementById('commune');
+            if (control && control.tagName === 'INPUT') return control;
+            const old = control;
+            control = document.createElement('input');
+            control.type = 'text';
+            control.id = 'commune';
+            control.name = 'commune';
+            control.required = true;
+            control.autocomplete = 'address-level2';
+            control.placeholder = 'اكتب اسم البلدية';
+            control.setAttribute('oninput', 'handleFieldInput(this)');
+            control.className = old ? old.className : '';
+            control.classList.remove('loading');
+            control.classList.add('blue-field');
+            if (old) old.replaceWith(control);
+            return control;
+        }
+
         async function loadCommunesForWilaya(wilayaValue) {
-            const communeSelect = document.getElementById('commune');
-            if (!communeSelect) return;
+            let communeSelect = ensureCommuneSelectControl();
             selectedCommune = null;
             communeSelect.innerHTML = '<option value="">جاري تحميل البلديات...</option>';
             communeSelect.disabled = true;
@@ -7439,8 +7471,14 @@
                     .sort((a, b) => String(a.nameAr || a.name || '').localeCompare(String(b.nameAr || b.name || ''), 'ar'));
                 communeSelect.innerHTML = '';
                 if (!communes.length) {
-                    communeSelect.innerHTML = '<option value="">لا توجد بلديات متاحة لهذه الولاية</option>';
-                    communeSelect.classList.remove('loading');
+                    // الولاية الجديدة لا تحتوي بعد على قائمة بلديات في المصدر: 
+                    // نحول الحقل إلى إدخال يدوي بدل تعطيله.
+                    const manualInput = ensureCommuneManualControl();
+                    manualInput.value = '';
+                    manualInput.disabled = false;
+                    manualInput.classList.remove('loading');
+                    manualInput.classList.add('blue-field');
+                    selectedCommune = '';
                     return;
                 }
                 const placeholder = document.createElement('option');
