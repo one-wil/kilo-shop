@@ -8628,46 +8628,7 @@ function renderFinance(orders,d){
 
 window.renderCheckoutAnalyticsLast=function(){if(!lastAnalytics)return;const mode=document.getElementById('caViewMode')?.value||'all';document.querySelectorAll('#checkout-analytics .ca-grid-2,#checkout-analytics .ca-grid-3,#checkout-analytics .ca-status-grid').forEach(e=>e.style.display='');if(mode==='finance'){document.querySelector('#checkout-analytics .ca-grid-2:nth-of-type(1)')?.style.setProperty('display','grid')} }
 window.clearCheckoutAnalyticsFilters=function(){['caDateFrom','caDateTo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});loadCheckoutAnalytics()}
-window.loadCheckoutAnalytics=async function(showMessage=false){
- const loading=document.getElementById('caLoading');
- if(loading)loading.style.display='block';
- try{
-   // Performance-safe: both independent sources are loaded in parallel.
-   // No calculation, event definitions, or financial semantics are changed.
-   const results=await Promise.allSettled([caApi(),caOrdersAll()]);
-   const analyticsResult=results[0], ordersResult=results[1];
-
-   if(analyticsResult.status==='rejected' && ordersResult.status==='rejected'){
-     throw new Error(`فشل تحميل Checkout والطلبات معًا.\n• Checkout: ${analyticsResult.reason?.message||analyticsResult.reason}\n• الطلبات: ${ordersResult.reason?.message||ordersResult.reason}`);
-   }
-
-   if(analyticsResult.status==='rejected'){
-     lastOrders=ordersResult.status==='fulfilled'?(ordersResult.value||[]):[];
-     throw new Error(`فشل تحميل Checkout Analytics: ${analyticsResult.reason?.message||analyticsResult.reason}`);
-   }
-
-   const d=analyticsResult.value;
-   const orders=ordersResult.status==='fulfilled'?(ordersResult.value||[]):[];
-   lastAnalytics=d;
-   lastOrders=orders;
-   renderCheckout(d,orders);
-
-   if(ordersResult.status==='rejected'){
-     renderFinance([],d);
-     throw new Error(`تم تحميل Checkout Analytics، لكن تعذر تحميل بيانات الطلبات المالية: ${ordersResult.reason?.message||ordersResult.reason}`);
-   }
-
-   renderFinance(orders,d);
-   const from=document.getElementById('caDateFrom')?.value,to=document.getElementById('caDateTo')?.value;
-   set('caFinancialPeriod',from||to?(from||'البداية')+' → '+(to||'اليوم'):'الفترة المتاحة');
-   if(showMessage&&typeof showNotification==='function')showNotification('تم تحديث التحليل الاحترافي بنجاح','success');
- }catch(e){
-   console.error('StoreMaster Checkout Analytics:',e);
-   if(typeof showNotification==='function')showNotification(e.message||'تعذر تحميل التحليل','error');
- }finally{
-   if(loading)loading.style.display='none';
- }
-};
+window.loadCheckoutAnalytics=async function(showMessage=false){const loading=document.getElementById('caLoading');if(loading)loading.style.display='block';try{let d;let orders=[];try{d=await caApi();lastAnalytics=d;renderCheckout(d,[]);}catch(e){throw new Error(`فشل تحميل Checkout Analytics: ${e?.message||e}`)}try{orders=await caOrdersAll();}catch(e){lastOrders=[];if(d)renderFinance([],d);throw new Error(`تم تحميل Checkout Analytics، لكن تعذر تحميل بيانات الطلبات المالية: ${e?.message||e}`)}lastAnalytics=d;lastOrders=orders;renderCheckout(d,orders);renderFinance(orders,d);const from=document.getElementById('caDateFrom')?.value,to=document.getElementById('caDateTo')?.value;set('caFinancialPeriod',from||to?(from||'البداية')+' → '+(to||'اليوم'):'الفترة المتاحة');if(showMessage&&typeof showNotification==='function')showNotification('تم تحديث التحليل الاحترافي بنجاح','success')}catch(e){console.error('StoreMaster Checkout Analytics:',e);if(typeof showNotification==='function')showNotification(e.message||'تعذر تحميل التحليل','error')}finally{if(loading)loading.style.display='none'}};
 })();
 </script>
 
