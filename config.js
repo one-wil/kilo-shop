@@ -476,6 +476,10 @@ const STORE_CONFIG = {
     "58 - المنيعة": {
       "home": 1100,
       "desk": 400
+    },
+    "59 - آفلو": {
+      "home": 1100,
+      "desk": 650
     }
   },
   "FREE_DELIVERY": {
