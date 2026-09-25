@@ -4986,6 +4986,61 @@
 
 
 </style>
+
+<style id="smart-attention-fields-v1">
+/* حقول الاختيار والإدخال: ملفتة قبل التعبئة، خضراء بعد الاكتمال */
+#page2 .smart-field select:not(:disabled),
+#page2 .smart-field input,
+#page2 .smart-field textarea {
+  border:2px solid rgba(0,153,255,.42)!important;
+  background:linear-gradient(135deg,#f7fcff,#eef9ff)!important;
+  box-shadow:0 0 0 2px rgba(0,153,255,.06),0 0 12px rgba(0,153,255,.12);
+  transition:all .25s ease;
+}
+#page2 .smart-field.field-attention select:not(:disabled),
+#page2 .smart-field.field-attention input,
+#page2 .smart-field.field-attention textarea {
+  animation:smartFieldAttention 1.35s ease-in-out infinite;
+}
+#page2 .smart-field input:focus,
+#page2 .smart-field textarea:focus,
+#page2 .smart-field select:focus {
+  border-color:#0099ff!important;
+  box-shadow:0 0 0 4px rgba(0,153,255,.12),0 0 18px rgba(0,153,255,.25)!important;
+  background:#fff!important;
+}
+#page2 .smart-field.field-complete input,
+#page2 .smart-field.field-complete textarea,
+#page2 .smart-field.field-complete select {
+  border-color:#18a86b!important;
+  background:rgba(24,168,107,.08)!important;
+  box-shadow:0 0 0 3px rgba(24,168,107,.10),0 0 13px rgba(24,168,107,.18)!important;
+  animation:none!important;
+}
+#page2 .smart-field.field-complete label i{color:#18a86b!important}
+#page2 .smart-wilaya-field{position:relative}
+#page2 #wilaya:not(:disabled):not(.smart-selected-field){
+  border:2px solid rgba(0,153,255,.48)!important;
+  background:linear-gradient(135deg,#f7fcff,#eaf8ff)!important;
+  animation:smartFieldAttention 1.35s ease-in-out infinite;
+}
+#page2 #wilaya.smart-selected-field{
+  border:2px solid #18a86b!important;
+  background:rgba(24,168,107,.09)!important;
+  color:#087a4b!important;
+  box-shadow:0 0 0 3px rgba(24,168,107,.10),0 0 14px rgba(24,168,107,.18)!important;
+  animation:none!important;
+}
+#page2 .smart-delivery-option:not(.selected){
+  border:2px solid rgba(0,153,255,.34)!important;
+  background:linear-gradient(135deg,#fff,#f1faff)!important;
+  animation:smartDeliveryAttention 1.35s ease-in-out infinite;
+}
+#page2 .smart-delivery-option.selected{animation:none!important}
+#page2 .smart-delivery-option.selected:after{content:'✓';position:absolute;top:7px;left:8px;width:19px;height:19px;border-radius:50%;background:#18a86b;color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center}
+@keyframes smartFieldAttention{0%,100%{box-shadow:0 0 0 2px rgba(0,153,255,.05),0 0 8px rgba(0,153,255,.10)}50%{box-shadow:0 0 0 4px rgba(0,153,255,.12),0 0 18px rgba(0,153,255,.25)}}
+@keyframes smartDeliveryAttention{0%,100%{transform:translateY(0);box-shadow:0 0 0 1px rgba(0,153,255,.06),0 0 8px rgba(0,153,255,.08)}50%{transform:translateY(-1px);box-shadow:0 0 0 3px rgba(0,153,255,.10),0 0 18px rgba(0,153,255,.20)}}
+</style>
 </head>
 <body>
     <!-- Flying Hearts Container -->
@@ -5954,6 +6009,7 @@
             } else {
                 field.classList.remove('blue-field');
             }
+            if (typeof syncCompletedFields === 'function') syncCompletedFields();
             checkDeliveryFields();
         }
 
@@ -9794,15 +9850,7 @@ html[data-store-template="PRO_PRODUCT_LANDING"] #ageOptions .size-option-small {
       try { stopPulse(2); stopPulse(3); stopPulse(4); } catch(e){}
       return;
     }
-    // أثناء المقدمة بعد إضافة المنتج، تبقى المرحلة 2 (اختيار الولاية) مخفية تماماً.
-    // لا تظهر إلا عندما تنتهي المرحلة 1 وتستدعي startStage2().
-    if(region){
-      if(window.smartIntroSequenceActive){
-        region.style.display='none';
-      }else if(!($('wilaya')&&$('wilaya').value)){
-        region.style.display='block';
-      }
-    }
+    if(region && !($('wilaya')&&$('wilaya').value)) region.style.display='block';
   }
   window.syncSmartStages=syncStages;
   const oldUpdateSelected=window.updateSelectedProducts;
@@ -9966,9 +10014,7 @@ html[data-store-template="PRO_PRODUCT_LANDING"] #ageOptions .size-option-small {
   }
   function syncCartState(){
     if(!cartHasItems()){clearLaterStages();return false}
-    const region=$('smartRegionPanel');
-    // لا نُظهر اختيار الولاية أثناء المرحلة 1 / المقدمة.
-    if(region && !window.smartIntroSequenceActive) region.style.display='block';
+    const region=$('smartRegionPanel'); if(region)region.style.display='block';
     const w=$('wilaya'); if(w)w.disabled=false;
     return true;
   }
@@ -10322,12 +10368,17 @@ html[data-store-template="PRO_PRODUCT_LANDING"] #ageOptions .size-option-small {
       if(id==='phone') ok=/^(05|06|07)[0-9]{8}$/.test(value);
       if(id==='address' && typeof selectedDeliveryType!=='undefined' && selectedDeliveryType!=='home') ok=true;
       wrap.classList.toggle('field-complete',ok);
+      wrap.classList.toggle('field-attention',!ok && !f.disabled);
     });
   }
 
   function syncWilayaColor(){
     const w=$('wilaya');
-    if(w)w.classList.toggle('smart-selected-field',!!w.value);
+    if(w){
+      w.classList.toggle('smart-selected-field',!!w.value);
+      const wrap=w.closest('.smart-field');
+      if(wrap)wrap.classList.toggle('field-attention',!w.value && !w.disabled);
+    }
   }
 
   // مزامنة المظهر عند اختيار الولاية/التوصيل والكتابة في الحقول.
