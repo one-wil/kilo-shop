@@ -9850,7 +9850,15 @@ html[data-store-template="PRO_PRODUCT_LANDING"] #ageOptions .size-option-small {
       try { stopPulse(2); stopPulse(3); stopPulse(4); } catch(e){}
       return;
     }
-    if(region && !($('wilaya')&&$('wilaya').value)) region.style.display='block';
+    // أثناء مقدمة المرحلة الأولى يجب أن تبقى الولاية والمراحل اللاحقة مخفية بالكامل.
+    // لا نسمح لأي تحديث للسلة أو لأي دالة قديمة بإظهارها قبل انتهاء المرحلة 1.
+    if(region){
+      if(window.smartIntroSequenceActive){
+        region.style.display='none';
+      }else if(!($('wilaya')&&$('wilaya').value)){
+        region.style.display='block';
+      }
+    }
   }
   window.syncSmartStages=syncStages;
   const oldUpdateSelected=window.updateSelectedProducts;
@@ -10014,12 +10022,17 @@ html[data-store-template="PRO_PRODUCT_LANDING"] #ageOptions .size-option-small {
   }
   function syncCartState(){
     if(!cartHasItems()){clearLaterStages();return false}
-    const region=$('smartRegionPanel'); if(region)region.style.display='block';
-    const w=$('wilaya'); if(w)w.disabled=false;
+    const region=$('smartRegionPanel');
+    // الحماية الأساسية: أثناء المرحلة 1 لا تظهر الولاية إطلاقاً.
+    if(region) region.style.display = window.smartIntroSequenceActive ? 'none' : 'block';
+    const w=$('wilaya'); if(w)w.disabled = !window.smartIntroSequenceActive ? false : true;
     return true;
   }
 
   function startStage2(){
+    if(!cartHasItems())return;
+    // لا تبدأ المرحلة 2 إلا بعد انتهاء المرحلة 1.
+    window.smartIntroSequenceActive = false;
     if(!syncCartState())return;
     const delivery=$('smartDeliveryPanel'), customer=$('personalInfoSection');
     if(delivery)delivery.style.display='none';
