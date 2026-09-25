@@ -172,6 +172,66 @@
       "createdAt": "2026-09-16T17:57:03.689Z",
       "image": "https://raw.githubusercontent.com/one-wil/vol-shop/main/images/product-1789581423689-1789581668031-Messenger-creation-810CA979-D104-4003-AC53-8D1BA722871C.jpeg",
       "updatedAt": "2026-09-16T18:08:38.128Z"
+    },
+    "1790364985301": {
+      "name": "معطف شتوي ",
+      "price": 3500,
+      "description": "",
+      "category": "",
+      "stock": 0,
+      "featured": false,
+      "availableColors": [
+        "أبيض",
+        "أزرق"
+      ],
+      "availableSizes": [
+        "S",
+        "M"
+      ],
+      "ageRanges": [],
+      "colorImages": {
+        "أزرق": {
+          "images": [
+            "https://raw.githubusercontent.com/one-wil/kilo-shop/main/images/product-1790364985301-أزرق-1790365290811-modal10.jpg"
+          ],
+          "ageRanges": [
+            {
+              "ageFrom": "",
+              "ageTo": "",
+              "size": "S"
+            },
+            {
+              "ageFrom": "",
+              "ageTo": "",
+              "size": "M"
+            }
+          ]
+        },
+        "أبيض": {
+          "images": [
+            "https://raw.githubusercontent.com/one-wil/kilo-shop/main/images/product-1790364985301-أبيض-1790365327397-modal7.jpg"
+          ],
+          "ageRanges": [
+            {
+              "ageFrom": "",
+              "ageTo": "",
+              "size": "S"
+            },
+            {
+              "ageFrom": "",
+              "ageTo": "",
+              "size": "M"
+            }
+          ]
+        }
+      },
+      "sizeGuide": {
+        "enabled": false,
+        "guide": {}
+      },
+      "createdAt": "2026-09-25T19:36:25.301Z",
+      "image": "https://raw.githubusercontent.com/one-wil/kilo-shop/main/images/product-1790364985301-1790365183346-modal10.jpg",
+      "updatedAt": "2026-09-25T19:41:52.051Z"
     }
   },
   "PRODUCT_ORDER": {
