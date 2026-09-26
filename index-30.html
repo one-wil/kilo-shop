@@ -5048,8 +5048,44 @@
 @keyframes selectionButtonHeartGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,80,120,0)}50%{box-shadow:0 0 0 5px rgba(255,80,120,.13),0 0 18px rgba(255,80,120,.22)}}
 .selection-heart-feedback{animation:selectionButtonHeartGlow .55s ease-out 1!important}
 /* المقاس المختار يحمل لون المؤشر القادم من اللون المختار */
-#productModal #ageOptions .size-option-small.size-linked-to-color{border-color:var(--linked-color,#0099ff)!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--linked-color,#0099ff) 22%,transparent),0 0 14px color-mix(in srgb,var(--linked-color,#0099ff) 28%,transparent)!important}
-#productModal #ageOptions .size-option-small.size-linked-to-color.selected{background:var(--linked-color,#0099ff)!important;color:#fff!important;border-color:var(--linked-color,#0099ff)!important;transform:translateY(-1px) scale(1.02)}
+/* مقاسات واضحة داخل إطارات ملونة */
+#productModal #ageOptions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:9px!important;padding:4px 2px 7px}
+#productModal #ageOptions .size-option-small{
+  min-width:0!important;min-height:46px!important;padding:8px 10px!important;
+  border:2px solid #1597d0!important;border-radius:12px!important;
+  background:linear-gradient(135deg,#ffffff 0%,#eefaff 100%)!important;
+  color:#16485f!important;font-size:.72rem!important;font-weight:850!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  position:relative!important;overflow:visible!important;
+  box-shadow:0 3px 10px rgba(0,129,190,.13)!important;
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease,background .2s ease!important;
+}
+#productModal #ageOptions .size-option-small:hover{
+  border-color:#00aeea!important;background:linear-gradient(135deg,#faffff,#e1f7ff)!important;
+  transform:translateY(-2px)!important;box-shadow:0 6px 16px rgba(0,153,255,.22)!important;
+}
+#productModal #ageOptions .size-option-small.size-linked-to-color{
+  border-color:var(--linked-color,#1597d0)!important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--linked-color,#1597d0) 16%,transparent),0 4px 12px color-mix(in srgb,var(--linked-color,#1597d0) 20%,transparent)!important;
+}
+#productModal #ageOptions .size-option-small.selected{
+  background:linear-gradient(135deg,#18a86b,#0b8f58)!important;
+  color:#fff!important;border:2px solid #087a4b!important;
+  transform:translateY(-2px) scale(1.035)!important;
+  box-shadow:0 6px 18px rgba(24,168,107,.30),0 0 0 3px rgba(24,168,107,.12)!important;
+  z-index:2!important;
+}
+#productModal #ageOptions .size-option-small.selected:after{
+  content:'✓';position:absolute;top:-8px;right:-8px;width:23px;height:23px;
+  border-radius:50%;background:#fff;color:#12915d;border:2px solid #18a86b;
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:1000;
+  line-height:1;box-shadow:0 3px 8px rgba(0,0,0,.18);z-index:5;
+}
+#productModal #ageOptions .size-option-small.size-linked-to-color.selected{
+  background:linear-gradient(135deg,#18a86b,#0b8f58)!important;
+  border-color:#087a4b!important;color:#fff!important;
+}
+
 #productModal #sizeOptionsContainer.size-linked-container{position:relative}
 #productModal #sizeOptionsContainer.size-linked-container:before{content:'↓ اختر المقاس المحدد باللون نفسه';display:block;text-align:center;font-size:.72rem;font-weight:800;color:var(--linked-color,#0099ff);margin:-4px 0 7px;animation:linkedSizeHint 1.2s ease-in-out infinite}
 @keyframes linkedSizeHint{0%,100%{opacity:.65;transform:translateY(0)}50%{opacity:1;transform:translateY(2px)}}
