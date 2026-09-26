@@ -5042,11 +5042,17 @@
 @keyframes smartDeliveryAttention{0%,100%{transform:translateY(0);box-shadow:0 0 0 1px rgba(0,153,255,.06),0 0 8px rgba(0,153,255,.08)}50%{transform:translateY(-1px);box-shadow:0 0 0 3px rgba(0,153,255,.10),0 0 18px rgba(0,153,255,.20)}}
 </style>
 
-<style id="dense-selection-hearts-v1">
-@keyframes denseHeartBurst{0%{transform:translate(0,0) scale(.55) rotate(0deg);opacity:1}45%{opacity:1}100%{transform:translate(var(--hx),var(--hy)) scale(var(--hs)) rotate(var(--hr));opacity:0}}
-.dense-selection-heart{position:fixed;left:0;top:0;z-index:2147483000;pointer-events:none;font-size:var(--hfs,18px);line-height:1;filter:drop-shadow(0 2px 3px rgba(255,40,90,.28));animation:denseHeartBurst var(--hd,900ms) cubic-bezier(.18,.72,.22,1) forwards;will-change:transform,opacity}
+<style id="dense-selection-hearts-v2">
+@keyframes selectionHeartStream{0%{transform:translate3d(0,0,0) scale(.45) rotate(0deg);opacity:0}12%{opacity:1}100%{transform:translate3d(var(--hx),var(--hy),0) scale(var(--hs)) rotate(var(--hr));opacity:0}}
+.dense-selection-heart{position:fixed;left:0;top:0;z-index:2147483000;pointer-events:none;font-size:var(--hfs,18px);line-height:1;filter:drop-shadow(0 2px 3px rgba(255,40,90,.28));animation:selectionHeartStream var(--hd,850ms) cubic-bezier(.18,.72,.22,1) forwards;will-change:transform,opacity}
 @keyframes selectionButtonHeartGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,80,120,0)}50%{box-shadow:0 0 0 5px rgba(255,80,120,.13),0 0 18px rgba(255,80,120,.22)}}
 .selection-heart-feedback{animation:selectionButtonHeartGlow .55s ease-out 1!important}
+/* المقاس المختار يحمل لون المؤشر القادم من اللون المختار */
+#productModal #ageOptions .size-option-small.size-linked-to-color{border-color:var(--linked-color,#0099ff)!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--linked-color,#0099ff) 22%,transparent),0 0 14px color-mix(in srgb,var(--linked-color,#0099ff) 28%,transparent)!important}
+#productModal #ageOptions .size-option-small.size-linked-to-color.selected{background:var(--linked-color,#0099ff)!important;color:#fff!important;border-color:var(--linked-color,#0099ff)!important;transform:translateY(-1px) scale(1.02)}
+#productModal #sizeOptionsContainer.size-linked-container{position:relative}
+#productModal #sizeOptionsContainer.size-linked-container:before{content:'↓ اختر المقاس المحدد باللون نفسه';display:block;text-align:center;font-size:.72rem;font-weight:800;color:var(--linked-color,#0099ff);margin:-4px 0 7px;animation:linkedSizeHint 1.2s ease-in-out infinite}
+@keyframes linkedSizeHint{0%,100%{opacity:.65;transform:translateY(0)}50%{opacity:1;transform:translateY(2px)}}
 </style>
 </head>
 <body>
@@ -6948,6 +6954,12 @@
                         stopColorBlinking(colorOption);
 
                         if (selectedColors.length) {
+                            const selectedColorOption = document.querySelector('#colorOptions .color-option-small.selected');
+                            const linkedColor = selectedColorOption ? (selectedColorOption.style.backgroundColor || getComputedStyle(selectedColorOption).backgroundColor || '#0099ff') : '#0099ff';
+                            if (sizeAfterColor) {
+                                sizeAfterColor.style.setProperty('--linked-color',linkedColor);
+                                sizeAfterColor.classList.add('size-linked-container');
+                            }
                             updateProductImageByColor(productKey, selectedColors[0]);
                             showAvailableSizesForColor(productKey, selectedColors[0]);
 
@@ -7122,6 +7134,14 @@
                 }
 
                 ageOption.addEventListener('click', function(event) {
+                    // اجعل المقاس المختار يحمل لون المؤشر الخاص باللون المختار.
+                    const activeColorOption = document.querySelector('#colorOptions .color-option-small.selected');
+                    if (activeColorOption) {
+                        const linkedColor = activeColorOption.style.backgroundColor || getComputedStyle(activeColorOption).backgroundColor || '#0099ff';
+                        ageOptions.querySelectorAll('.size-option-small').forEach(o=>o.style.setProperty('--linked-color',linkedColor));
+                        ageOptions.classList.add('size-linked-container');
+                        ageOptions.querySelectorAll('.size-option-small').forEach(o=>o.classList.add('size-linked-to-color'));
+                    }
                     ageOption.classList.toggle('selected');
                     ageOption.classList.remove('blinking-size');
                     selectedAges = Array.from(document.querySelectorAll('#ageOptions .size-option-small.selected'))
@@ -10763,35 +10783,46 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
 <script id="dense-selection-hearts-js">
 (function(){
   const HEARTS=['❤','💖','💗','💕','💓'];
-  function burstFrom(el,count=24){
+  let streamTimer=null;
+  let streamUntil=0;
+  let streamEl=null;
+  function emitHeart(el){
     if(!el)return;
     const r=el.getBoundingClientRect(); if(!r.width&&!r.height)return;
+    const h=document.createElement('span'); h.className='dense-selection-heart'; h.textContent=HEARTS[Math.floor(Math.random()*HEARTS.length)];
     const cx=r.left+r.width/2, cy=r.top+r.height/2;
-    el.classList.remove('selection-heart-feedback'); void el.offsetWidth; el.classList.add('selection-heart-feedback');
-    for(let i=0;i<count;i++){
-      const h=document.createElement('span'); h.className='dense-selection-heart'; h.textContent=HEARTS[i%HEARTS.length];
-      const angle=(Math.PI*2*i/count)+(Math.random()-.5)*.45;
-      const dist=55+Math.random()*125;
-      h.style.left=cx+'px'; h.style.top=cy+'px';
-      h.style.setProperty('--hx',(Math.cos(angle)*dist)+'px');
-      h.style.setProperty('--hy',(Math.sin(angle)*dist-45-Math.random()*65)+'px');
-      h.style.setProperty('--hs',(0.72+Math.random()*.8).toFixed(2));
-      h.style.setProperty('--hr',((-35+Math.random()*70).toFixed(0))+'deg');
-      h.style.setProperty('--hfs',(13+Math.random()*13).toFixed(0)+'px');
-      h.style.setProperty('--hd',(700+Math.random()*500).toFixed(0)+'ms');
-      document.body.appendChild(h);
-      setTimeout(()=>h.remove(),1400);
-    }
+    const angle=(-Math.PI/2)+(Math.random()-.5)*1.05;
+    const dist=42+Math.random()*105;
+    h.style.left=cx+'px'; h.style.top=cy+'px';
+    h.style.setProperty('--hx',(Math.cos(angle)*dist)+'px');
+    h.style.setProperty('--hy',(Math.sin(angle)*dist-20-Math.random()*55)+'px');
+    h.style.setProperty('--hs',(0.72+Math.random()*.72).toFixed(2));
+    h.style.setProperty('--hr',((-30+Math.random()*60).toFixed(0))+'deg');
+    h.style.setProperty('--hfs',(13+Math.random()*13).toFixed(0)+'px');
+    h.style.setProperty('--hd',(650+Math.random()*500).toFixed(0)+'ms');
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(),1300);
   }
-  window.denseSelectionHearts=burstFrom;
+  function streamFrom(el,duration=1050){
+    if(!el)return;
+    streamEl=el; streamUntil=Date.now()+duration;
+    el.classList.remove('selection-heart-feedback'); void el.offsetWidth; el.classList.add('selection-heart-feedback');
+    if(streamTimer)return;
+    streamTimer=setInterval(()=>{
+      if(!streamEl || Date.now()>=streamUntil){clearInterval(streamTimer);streamTimer=null;streamEl=null;return}
+      emitHeart(streamEl);
+      if(Math.random()>.35) emitHeart(streamEl);
+    },85);
+  }
+  window.denseSelectionHearts=streamFrom;
   document.addEventListener('change',function(e){
     const t=e.target;
-    if(t && t.id==='wilaya' && t.value) burstFrom(t,32);
-    if(t && t.id==='commune' && t.value) burstFrom(t,28);
+    if(t && t.id==='wilaya' && t.value) streamFrom(t);
+    if(t && t.id==='commune' && t.value) streamFrom(t);
   },true);
   document.addEventListener('click',function(e){
-    const t=e.target.closest && e.target.closest('.smart-delivery-option, .color-option, .color-choice, .size-option, .size-choice, [data-color], [data-size], .product-color, .product-size');
-    if(t) burstFrom(t,26);
+    const t=e.target.closest && e.target.closest('.smart-delivery-option, .color-option-small, .color-option, .color-choice, .size-option-small, .size-option, .size-choice, .product-color, .product-size, button');
+    if(t) streamFrom(t);
   },true);
 })();
 </script>
