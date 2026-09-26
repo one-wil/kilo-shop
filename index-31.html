@@ -5121,6 +5121,97 @@
 }
 </style>
 
+
+<style id="index31-color-size-final-order">
+/* التسلسل النهائي داخل بطاقة المنتج: اللون ← المقاس ← جدول القياسات والوزن */
+#productModal .modern-info{
+    display:flex !important;
+    flex-direction:column !important;
+}
+#productModal .modern-info > .modern-choice-card:nth-of-type(1){
+    order:10 !important;
+}
+#productModal #sizeOptionsContainer{
+    order:20 !important;
+}
+#productModal #measurementsTableContainer{
+    order:30 !important;
+}
+#productModal #discountMessage{order:40 !important;}
+#productModal #freeDeliveryMessage{order:50 !important;}
+#productModal .modern-summary{order:60 !important;}
+#productModal .quantity-selector{order:70 !important;}
+#productModal .modern-trust{order:80 !important;}
+#productModal .modern-actions{order:90 !important;}
+
+/* اللون والمقاس بنفس الارتفاع والحجم */
+#productModal #colorOptions .color-image-option,
+#productModal #ageOptions .size-option-small{
+    height:58px !important;
+    min-height:58px !important;
+    box-sizing:border-box !important;
+}
+
+/* ✓ للون المختار */
+#productModal #colorOptions .color-swatch-check{
+    display:flex !important;
+    opacity:0 !important;
+    transform:scale(.7) !important;
+    position:absolute !important;
+    top:3px !important;
+    right:3px !important;
+    width:17px !important;
+    height:17px !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border-radius:50% !important;
+    background:#111 !important;
+    color:#fff !important;
+    font-size:8px !important;
+    pointer-events:none !important;
+    z-index:5 !important;
+    transition:.16s ease !important;
+}
+#productModal #colorOptions .color-image-option.selected .color-swatch-check{
+    opacity:1 !important;
+    transform:scale(1) !important;
+}
+
+/* ✓ للمقاس المختار */
+#productModal #ageOptions .size-option-small.selected::after{
+    content:'✓' !important;
+    position:absolute !important;
+    top:3px !important;
+    right:3px !important;
+    width:17px !important;
+    height:17px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border-radius:50% !important;
+    background:#111 !important;
+    color:#fff !important;
+    font-size:9px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    pointer-events:none !important;
+    z-index:5 !important;
+}
+
+/* الوميض يبقى للمقاس قبل اختياره */
+#productModal #ageOptions .size-option-small.blinking-size{
+    animation:optionFramePulse .8s ease-in-out infinite !important;
+}
+
+@media(max-width:800px){
+    #productModal #colorOptions .color-image-option,
+    #productModal #ageOptions .size-option-small{
+        height:58px !important;
+        min-height:58px !important;
+    }
+}
+</style>
+
 </head>
 <body>
     <!-- Flying Hearts Container -->
@@ -5367,16 +5458,16 @@
                         <div class="modern-choice-options" id="colorOptions"></div>
                     </div>
 
-                    <!-- بعد اختيار اللون: جدول القياسات أولاً، ثم اختيار المقاس -->
+                    <!-- بعد اختيار اللون: المقاس مباشرة، ثم جدول القياسات والوزن -->
+                    <div class="modern-choice-card" id="sizeOptionsContainer" style="display:none">
+                        <div class="modern-choice-label"><span>الخطوة 2</span> اختر المقاس <span id="modernSelectedSize">لم يتم الاختيار</span></div>
+                        <div class="modern-choice-options" id="ageOptions"></div>
+                    </div>
+
                     <div class="measurements-table-container" id="measurementsTableContainer" style="display:none">
                         <div class="measurements-table-title"><i class="fas fa-ruler-combined"></i> جدول القياسات والوزن <i class="fas fa-weight-scale"></i></div>
                         <table class="measurements-table"><thead><tr><th>المقاس</th><th>الطول</th><th>الوزن</th></tr></thead><tbody id="measurementsTableBody"></tbody></table>
                         <div class="measurements-table-footer"><i class="fas fa-circle-info"></i> اختر المقاس حسب الطول والوزن</div>
-                    </div>
-
-                    <div class="modern-choice-card" id="sizeOptionsContainer" style="display:none">
-                        <div class="modern-choice-label"><span>الخطوة 2</span> اختر المقاس <span id="modernSelectedSize">لم يتم الاختيار</span></div>
-                        <div class="modern-choice-options" id="ageOptions"></div>
                     </div>
 
                     <div id="discountMessage" class="discount-message post-size-element after-size-reveal" style="display:none"><i class="fas fa-percentage"></i><span id="discountText"></span></div>
@@ -7040,9 +7131,9 @@
                             setAfterSizeReveal(false);
 
                             requestAnimationFrame(() => {
-                                const table = document.getElementById('measurementsTableContainer');
                                 const sizeBox = document.getElementById('sizeOptionsContainer');
-                                const target = table && table.style.display !== 'none' ? table : sizeBox;
+                                const table = document.getElementById('measurementsTableContainer');
+                                const target = sizeBox && sizeBox.style.display !== 'none' ? sizeBox : table;
                                 smoothProductStepScroll(target, 28);
                             });
                         } else {
