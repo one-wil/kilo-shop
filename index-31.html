@@ -5041,6 +5041,86 @@
 @keyframes smartFieldAttention{0%,100%{box-shadow:0 0 0 2px rgba(0,153,255,.05),0 0 8px rgba(0,153,255,.10)}50%{box-shadow:0 0 0 4px rgba(0,153,255,.12),0 0 18px rgba(0,153,255,.25)}}
 @keyframes smartDeliveryAttention{0%,100%{transform:translateY(0);box-shadow:0 0 0 1px rgba(0,153,255,.06),0 0 8px rgba(0,153,255,.08)}50%{transform:translateY(-1px);box-shadow:0 0 0 3px rgba(0,153,255,.10),0 0 18px rgba(0,153,255,.20)}}
 </style>
+
+<style id="size-selector-match-color-final">
+/* نقل علامة الاختيار من اللون إلى المقاس في تفاصيل المنتج */
+#productModal #colorOptions .color-swatch-check{
+    display:none !important;
+    opacity:0 !important;
+}
+
+/* أزرار المقاس: نفس شكل حالة اللون قبل الاختيار */
+#productModal #ageOptions .size-option-small{
+    position:relative !important;
+    box-sizing:border-box !important;
+    background:#fff !important;
+    color:#29485b !important;
+    border:1px solid #d1d9e6 !important;
+    border-radius:8px !important;
+    font-weight:600 !important;
+    box-shadow:none !important;
+    transform:none !important;
+    transition:all .16s ease !important;
+    padding:4px 20px 4px 7px !important;
+}
+
+/* عند مرور المؤشر: نفس الإحساس البصري لزر اللون */
+#productModal #ageOptions .size-option-small:hover{
+    border-color:#0099FF !important;
+    background:rgba(0,153,255,.05) !important;
+    transform:translateY(-1px) !important;
+    box-shadow:0 3px 8px rgba(0,153,255,.15) !important;
+}
+
+/* المقاس المختار: إطار واضح + علامة ✓ */
+#productModal #ageOptions .size-option-small.selected{
+    background:rgba(0,153,255,.10) !important;
+    color:#29485b !important;
+    border:2px solid #111 !important;
+    font-weight:800 !important;
+    transform:scale(1.02) !important;
+    box-shadow:0 4px 12px rgba(0,153,255,.20) !important;
+}
+
+#productModal #ageOptions .size-option-small.selected::after{
+    content:'✓' !important;
+    position:absolute !important;
+    top:3px !important;
+    right:3px !important;
+    width:17px !important;
+    height:17px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border-radius:50% !important;
+    background:#111 !important;
+    color:#fff !important;
+    font-size:9px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    pointer-events:none !important;
+}
+
+/* عند النبض: يبقى شكل المقاس واضحاً ولا تتحول ألوانه إلى شكل مختلف */
+#productModal #ageOptions .size-option-small.blinking-size{
+    color:#29485b !important;
+    border:2px solid #111 !important;
+}
+
+@media(max-width:760px){
+    #productModal #ageOptions .size-option-small{
+        padding:3px 19px 3px 5px !important;
+    }
+    #productModal #ageOptions .size-option-small.selected::after{
+        width:15px !important;
+        height:15px !important;
+        font-size:8px !important;
+        top:2px !important;
+        right:2px !important;
+    }
+}
+</style>
+
 </head>
 <body>
     <!-- Flying Hearts Container -->
