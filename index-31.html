@@ -10912,3 +10912,104 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
 
 </body>
 </html>
+<style id="index31-size-match-color-final">
+/* =========================================================
+   INDEX-31 FINAL SIZE SELECTOR MATCH
+   المقاسات مطابقة تماماً لأزرار الألوان من حيث الارتفاع والوميض.
+   - قبل الاختيار: نفس الارتفاع + نفس وميض اللون.
+   - بعد الاختيار: نفس الارتفاع + إطار واضح + علامة ✓.
+   - لا نغيّر منطق الاختيار أو الأحداث.
+   ========================================================= */
+#productModal #ageOptions .size-option-small{
+    position:relative !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:58px !important;
+    min-height:58px !important;
+    margin:0 !important;
+    padding:2px !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+    border:2px solid #e4e4e1 !important;
+    border-radius:9px !important;
+    background:#fff !important;
+    color:#29485b !important;
+    cursor:pointer !important;
+    transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease !important;
+    font-size:7px !important;
+    line-height:1.15 !important;
+    font-weight:700 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+}
+
+/* نفس وميض اللون قبل الاختيار */
+#productModal #ageOptions .size-option-small.blinking-size{
+    color:#D4AF37 !important;
+    border:2px solid #000 !important;
+    animation:optionFramePulse .8s ease-in-out infinite !important;
+    opacity:1 !important;
+    font-weight:700 !important;
+}
+
+/* بعد الاختيار: نفس الارتفاع، لكن بدون وميض */
+#productModal #ageOptions .size-option-small.selected{
+    color:#D4AF37 !important;
+    border:2px solid #000 !important;
+    background:rgba(0,153,255,.10) !important;
+    box-shadow:0 0 0 2px rgba(17,17,17,.10) !important;
+    transform:none !important;
+    animation:none !important;
+}
+
+/* علامة الاختيار للمقاس فقط */
+#productModal #ageOptions .size-option-small.selected::after{
+    content:'✓' !important;
+    position:absolute !important;
+    top:3px !important;
+    right:3px !important;
+    width:17px !important;
+    height:17px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border-radius:50% !important;
+    background:#111 !important;
+    color:#fff !important;
+    font-size:9px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    pointer-events:none !important;
+}
+
+/* إخفاء علامة اللون نهائياً: ✓ أصبحت للمقاس */
+#productModal #colorOptions .color-swatch-check{
+    display:none !important;
+}
+
+@media(max-width:800px){
+    #productModal #ageOptions .size-option-small{
+        height:51px !important;
+        min-height:51px !important;
+        padding:2px !important;
+        font-size:7px !important;
+    }
+}
+
+@media(max-width:420px){
+    #productModal #ageOptions .size-option-small{
+        height:46px !important;
+        min-height:46px !important;
+        font-size:6.5px !important;
+    }
+    #productModal #ageOptions .size-option-small.selected::after{
+        width:15px !important;
+        height:15px !important;
+        font-size:8px !important;
+        top:2px !important;
+        right:2px !important;
+    }
+}
+</style>
