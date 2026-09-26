@@ -6954,8 +6954,11 @@
                         stopColorBlinking(colorOption);
 
                         if (selectedColors.length) {
+                            // نحدد حاوية المقاسات قبل استعمالها حتى لا يتوقف حدث اختيار اللون بخطأ JavaScript.
+                            const tableAfterColor = document.getElementById('measurementsTableContainer');
+                            const sizeAfterColor = document.getElementById('sizeOptionsContainer');
                             const selectedColorOption = document.querySelector('#colorOptions .color-option-small.selected');
-                            const linkedColor = selectedColorOption ? (selectedColorOption.style.backgroundColor || getComputedStyle(selectedColorOption).backgroundColor || '#0099ff') : '#0099ff';
+                            const linkedColor = selectedColorOption ? (selectedColorOption.dataset.linkColor || selectedColorOption.style.backgroundColor || getComputedStyle(selectedColorOption).backgroundColor || '#0099ff') : '#0099ff';
                             if (sizeAfterColor) {
                                 sizeAfterColor.style.setProperty('--linked-color',linkedColor);
                                 sizeAfterColor.classList.add('size-linked-container');
@@ -6964,8 +6967,6 @@
                             showAvailableSizesForColor(productKey, selectedColors[0]);
 
                             // المرحلة الثانية: بعد تفعيل لون واحد على الأقل يظهر جدول القياسات ثم المقاسات.
-                            const tableAfterColor = document.getElementById('measurementsTableContainer');
-                            const sizeAfterColor = document.getElementById('sizeOptionsContainer');
                             const guideAfterColor = getEnabledSizeGuide(STORE_CONFIG.PRODUCTS[productKey]);
                             if (tableAfterColor) {
                                 tableAfterColor.classList.remove('stage-hidden');
