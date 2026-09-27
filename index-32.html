@@ -7150,10 +7150,15 @@
                 }
                 
                 freeDeliveryText.textContent = deliveryTypeText;
+                freeDeliveryMessage.dataset.fallback = 'false';
                 freeDeliveryMessage.style.display = 'flex';
                 freeDeliveryMessage.classList.remove('fast-pulse');
             } else {
-                freeDeliveryMessage.style.display = 'none';
+                // عند عدم توفر التوصيل المجاني، نستعمل نفس مكان الرسالة لطمأنة الزبون.
+                // لا نُظهر عبارة التوصيل المجاني إطلاقاً.
+                freeDeliveryText.textContent = 'توصيل آمن • الدفع بعد الاستلام';
+                freeDeliveryMessage.dataset.fallback = 'true';
+                freeDeliveryMessage.style.display = 'flex';
                 freeDeliveryMessage.classList.remove('fast-pulse');
             }
             
@@ -7171,10 +7176,13 @@
                 }
 
                 const promoEnabled = !!(hasPromoDiscount || hasQuantityDiscount);
-                const deliveryEnabled = !!(isFreeDeliveryProduct && STORE_CONFIG.FREE_DELIVERY &&
-                    (STORE_CONFIG.FREE_DELIVERY.desk?.enabled || STORE_CONFIG.FREE_DELIVERY.home?.enabled));
+                const deliveryEnabled = true; // التوصيل الآمن/الدفع بعد الاستلام هو الرسالة البديلة دائماً عند غياب المجاني.
+                // إذا لم يوجد أي خصم، نحذف رسالة الخصم نهائياً ولا نحجز لها مكاناً.
+                if (discountMessage) {
+                    discountMessage.style.display = promoEnabled ? 'flex' : 'none';
+                }
                 imageBadges.classList.toggle('has-image-messages', promoEnabled || deliveryEnabled);
-                imageBadges.style.display = (promoEnabled || deliveryEnabled) ? 'flex' : 'none';
+                imageBadges.style.display = 'flex';
             }
 
             const measurementsTableContainer = document.getElementById('measurementsTableContainer');
@@ -11391,7 +11399,7 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
   window.index32SyncDetailMessageFrame=sync;
 })();
 </script>
-</body>
+\n<style id="index32-quantity-attention-final">\n/* بعد اختيار المقاس: لفت انتباه قصير للكمية وأزرار -/+ ثم يتوقف تماماً */\n@keyframes index32QuantityAttention {\n  0%   { transform:scale(1); box-shadow:0 0 0 0 rgba(0,0,0,0); }\n  18%  { transform:scale(1.035); box-shadow:0 0 0 4px rgba(212,175,55,.18), 0 5px 16px rgba(0,0,0,.10); }\n  36%  { transform:scale(.985); }\n  54%  { transform:scale(1.025); box-shadow:0 0 0 6px rgba(212,175,55,.14), 0 7px 20px rgba(0,0,0,.13); }\n  72%  { transform:scale(.995); }\n  100% { transform:scale(1); box-shadow:0 0 0 0 rgba(0,0,0,0); }\n}\n#productModal .modern-summary.index32-quantity-attention,\n#productModal .quantity-selector.index32-quantity-attention {\n  animation:index32QuantityAttention .95s ease-in-out 2 !important;\n  transform-origin:center center !important;\n  will-change:transform,box-shadow !important;\n}\n#productModal .quantity-selector.index32-quantity-attention .quantity-btn {\n  animation:index32QuantityAttention .95s ease-in-out 2 !important;\n}\n</style>\n<script id="index32-quantity-attention-final">\n(function(){\n  function pulseQuantity(){\n    const modal=document.getElementById('productModal');\n    if(!modal) return;\n    const summary=modal.querySelector('.modern-summary.post-size-element');\n    const selector=modal.querySelector('.quantity-selector.post-size-element');\n    [summary,selector].filter(Boolean).forEach(el=>{\n      el.classList.remove('index32-quantity-attention');\n      void el.offsetWidth;\n      el.classList.add('index32-quantity-attention');\n      clearTimeout(el.__index32QtyTimer);\n      el.__index32QtyTimer=setTimeout(()=>el.classList.remove('index32-quantity-attention'),2100);\n    });\n  }\n  function bind(){\n    const age=document.getElementById('ageOptions');\n    if(!age || age.dataset.qtyAttentionBound) return;\n    age.dataset.qtyAttentionBound='1';\n    age.addEventListener('click',function(e){\n      const btn=e.target.closest('.size-option-small');\n      if(!btn) return;\n      setTimeout(function(){\n        if(age.querySelector('.size-option-small.selected')) pulseQuantity();\n      },60);\n    });\n  }\n  function init(){\n    bind();\n    const modal=document.getElementById('productModal');\n    if(modal){\n      new MutationObserver(bind).observe(modal,{childList:true,subtree:true});\n    }\n  }\n  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();\n})();\n</script>\n</body>
 
 <style id="index31-size-motion-absolute-final">
 /* حركة المقاسات النهائية: لا تعتمد على لون الخلفية */
