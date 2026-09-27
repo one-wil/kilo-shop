@@ -2241,6 +2241,19 @@
 #checkout-analytics .ca-live{padding:7px 10px;border-radius:999px;background:#ecfdf3;border:1px solid #bbf7d0}
 @media(max-width:520px){#checkout-analytics .ca-pro{gap:10px}#checkout-analytics .ca-toolbar{padding:11px;border-radius:13px!important}#checkout-analytics .ca-kpi{min-height:94px;padding:13px;border-radius:14px!important}#checkout-analytics .ca-kpi strong{font-size:24px;margin-top:6px}#checkout-analytics .ca-kpi small{font-size:9px}#checkout-analytics .ca-panel{padding:12px;border-radius:14px!important}#checkout-analytics .ca-panel-title b{font-size:12px!important}#checkout-analytics .ca-panel-title span{font-size:9px!important}}
 
+
+/* adm-1234 : دوائر نسبية لجميع مؤشرات Checkout */
+.ca-all-rates{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:14px;align-items:stretch}
+.ca-all-rate-card{background:linear-gradient(145deg,#ffffff,#f8fafc);border:1px solid #e2e8f0;border-radius:16px;padding:13px 8px;text-align:center;box-shadow:0 5px 16px rgba(15,23,42,.05)}
+.ca-all-rate-ring{--p:0;--ring:#4361ee;width:92px;height:92px;border-radius:50%;margin:0 auto 9px;display:grid;place-items:center;position:relative;background:conic-gradient(var(--ring) calc(var(--p)*1%),#e9eef5 0);box-shadow:0 4px 14px rgba(15,23,42,.08)}
+.ca-all-rate-ring:before{content:'';position:absolute;inset:8px;border-radius:50%;background:#fff;border:1px solid #e8edf3}
+.ca-all-rate-ring strong{position:relative;z-index:1;font-size:19px;color:#172033;font-weight:900}
+.ca-all-rate-card b{display:block;color:#172033;font-size:11px;line-height:1.4}
+.ca-all-rate-card small{display:block;color:#64748b;font-size:9px;margin-top:3px}
+@media(max-width:1100px){.ca-all-rates{grid-template-columns:repeat(4,minmax(120px,1fr))}}
+@media(max-width:700px){.ca-all-rates{grid-template-columns:repeat(3,minmax(100px,1fr))}.ca-all-rate-ring{width:82px;height:82px}}
+@media(max-width:480px){.ca-all-rates{grid-template-columns:repeat(2,minmax(110px,1fr))}}
+
 /* adm-% : دوائر نسب توقف الجلسات غير المكتملة */
 .ca-abandoned-rates{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:14px;margin-bottom:18px}
 .ca-rate-card{background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));border:1px solid rgba(255,213,74,.18);border-radius:18px;padding:15px 10px;text-align:center;min-width:0}
@@ -2710,6 +2723,11 @@ input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus, [cont
     <div class="ca-panel">
       <div class="ca-panel-title"><b><i class="fas fa-chart-pie"></i> أين توقفت الجلسات غير المكتملة؟</b><span>من إجمالي الجلسات غير المكتملة التاريخية</span></div>
       <div id="caAbandonedRates" class="ca-abandoned-rates"></div>
+    </div>
+
+    <div class="ca-panel ca-all-rates-panel">
+      <div class="ca-panel-title"><b><i class="fas fa-percent"></i> جميع النسب</b><span>دوائر نسبية لكل مؤشرات مسار Checkout</span></div>
+      <div id="caAllRates" class="ca-all-rates"></div>
     </div>
 
     <div class="ca-grid-2">
@@ -8614,6 +8632,25 @@ function renderCheckout(d,orders=[]){
  set('caAbandoned',num(s.abandoned));
  set('caConversion','جلسات أرسلت الطلب: '+num(sendStageCount)+' · معدل الإتمام: '+conversion+'%');
  set('caAbandonedRate','معدل غير المكتمل: '+Number(s.abandonedRate||0)+'%');
+
+ // دوائر جميع النسب: التحويل + غير المكتمل + كل مراحل مسار Checkout
+ const allRates=document.getElementById('caAllRates');
+ if(allRates){
+   const funnelAll=(d.funnel||[]).map(x=>({...x,label:journeyLabel(x)}));
+   const colors=['#4361ee','#06b6d4','#10b981','#f59e0b','#8b5cf6','#ef4444'];
+   const cards=[];
+   cards.push({label:'معدل الإتمام',rate:conversion,count:purchaseCount,sub:'جلسات أتمت الطلب'});
+   cards.push({label:'معدل غير المكتمل',rate:Number(s.abandonedRate||0),count:Number(s.abandoned||0),sub:'جلسة غير مكتملة'});
+   funnelAll.forEach((x,i)=>{
+     const stage=Number(x.stage);
+     // مرحلة إرسال الطلب ليست ضمن توزيع التوقف، لكنها تبقى ضمن جميع النسب العامة.
+     cards.push({label:x.label,rate:Number(x.rate||0),count:Number(x.sessions||0),sub:'جلسة'});
+   });
+   allRates.innerHTML=cards.map((x,i)=>{
+     const rate=Math.max(0,Math.min(100,Number(x.rate)||0));
+     return `<div class="ca-all-rate-card"><div class="ca-all-rate-ring" style="--p:${rate};--ring:${colors[i%colors.length]}"><strong>${rate}%</strong></div><b>${esc(x.label)}</b><small>${num(x.count)} ${esc(x.sub||'')}</small></div>`;
+   }).join('') || '<div class="ca-empty">لا توجد نسب متاحة.</div>';
+ }
 
  const ard=document.getElementById('caAbandonedRates');
  if(ard){
