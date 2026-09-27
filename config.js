@@ -63,7 +63,7 @@ const STORE_CONFIG = {
       },
       "createdAt": "2026-09-15T12:56:26.031Z",
       "image": "https://raw.githubusercontent.com/one-wil/dawn-dz/main/images/product-1789476986031-1789477052559-modal3.jpg",
-      "updatedAt": "2026-09-22T12:19:18.809Z"
+      "updatedAt": "2026-09-27T18:34:57.164Z"
     },
     "1789581423689": {
       "name": " Ensemble polo",
