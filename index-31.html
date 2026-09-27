@@ -11124,6 +11124,77 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
 }
 </style>
 </body>
+
+<style id="index31-size-motion-absolute-final">
+/* حركة المقاسات النهائية: لا تعتمد على لون الخلفية */
+@keyframes index31SizeMotionAbsolute {
+  0%,100% { transform:translate3d(0,0,0) scale(1) rotate(0deg) !important; box-shadow:0 0 0 0 rgba(0,0,0,0) !important; }
+  15% { transform:translate3d(-4px,0,0) scale(1.035) rotate(-1deg) !important; box-shadow:0 0 0 3px rgba(0,0,0,.12),0 5px 15px rgba(0,0,0,.20) !important; }
+  30% { transform:translate3d(4px,0,0) scale(1.045) rotate(1deg) !important; box-shadow:0 0 0 5px rgba(212,175,55,.18),0 7px 18px rgba(0,0,0,.25) !important; }
+  45% { transform:translate3d(-4px,0,0) scale(1.035) rotate(-1deg) !important; box-shadow:0 0 0 3px rgba(0,0,0,.12),0 5px 15px rgba(0,0,0,.20) !important; }
+  60% { transform:translate3d(4px,0,0) scale(1.045) rotate(1deg) !important; box-shadow:0 0 0 5px rgba(212,175,55,.18),0 7px 18px rgba(0,0,0,.25) !important; }
+  75% { transform:translate3d(-2px,0,0) scale(1.025) rotate(-.5deg) !important; }
+  90% { transform:translate3d(2px,0,0) scale(1.015) rotate(.5deg) !important; }
+}
+#productModal #ageOptions .size-option-small.blinking-size:not(.selected) {
+  animation:index31SizeMotionAbsolute .65s linear infinite !important;
+  border:2px solid #111 !important;
+  background:#fff !important;
+  color:#111 !important;
+  opacity:1 !important;
+  z-index:5 !important;
+  position:relative !important;
+  will-change:transform,box-shadow;
+}
+#productModal #ageOptions .size-option-small.blinking-size:not(.selected)::before {
+  content:'' !important;
+  position:absolute !important;
+  inset:-4px !important;
+  border:2px solid rgba(212,175,55,.65) !important;
+  border-radius:11px !important;
+  pointer-events:none !important;
+  animation:index31SizeRing .65s ease-in-out infinite !important;
+}
+@keyframes index31SizeRing {
+  0%,100% { opacity:.15; transform:scale(.96); }
+  50% { opacity:1; transform:scale(1.06); }
+}
+#productModal #ageOptions .size-option-small.selected,
+#productModal #ageOptions .size-option-small.selected::before {
+  animation:none !important;
+  transform:none !important;
+}
+</style>
+<script id="index31-size-motion-absolute-script">
+(function(){
+  function forceSizeMotion(){
+    const box=document.getElementById('ageOptions');
+    if(!box) return;
+    box.querySelectorAll('.size-option-small').forEach(function(el){
+      if(!el.classList.contains('selected')){
+        el.classList.add('blinking-size');
+        el.style.setProperty('animation','index31SizeMotionAbsolute .65s linear infinite','important');
+        el.style.setProperty('transform-origin','center center','important');
+      }else{
+        el.classList.remove('blinking-size');
+        el.style.removeProperty('animation');
+      }
+    });
+  }
+  function init(){
+    forceSizeMotion();
+    setTimeout(forceSizeMotion,100);
+    setTimeout(forceSizeMotion,400);
+    const box=document.getElementById('ageOptions');
+    if(box && !box.dataset.motionFinalBound){
+      box.dataset.motionFinalBound='1';
+      new MutationObserver(function(){requestAnimationFrame(forceSizeMotion)})
+        .observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
 </html>
 <style id="index31-size-match-color-final">
 /* =========================================================
@@ -11382,5 +11453,77 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
         });
         mo.observe(modal,{childList:true,subtree:true});
     }
+})();
+</script>
+
+
+<style id="index31-size-motion-absolute-final">
+/* حركة المقاسات النهائية: لا تعتمد على لون الخلفية */
+@keyframes index31SizeMotionAbsolute {
+  0%,100% { transform:translate3d(0,0,0) scale(1) rotate(0deg) !important; box-shadow:0 0 0 0 rgba(0,0,0,0) !important; }
+  15% { transform:translate3d(-4px,0,0) scale(1.035) rotate(-1deg) !important; box-shadow:0 0 0 3px rgba(0,0,0,.12),0 5px 15px rgba(0,0,0,.20) !important; }
+  30% { transform:translate3d(4px,0,0) scale(1.045) rotate(1deg) !important; box-shadow:0 0 0 5px rgba(212,175,55,.18),0 7px 18px rgba(0,0,0,.25) !important; }
+  45% { transform:translate3d(-4px,0,0) scale(1.035) rotate(-1deg) !important; box-shadow:0 0 0 3px rgba(0,0,0,.12),0 5px 15px rgba(0,0,0,.20) !important; }
+  60% { transform:translate3d(4px,0,0) scale(1.045) rotate(1deg) !important; box-shadow:0 0 0 5px rgba(212,175,55,.18),0 7px 18px rgba(0,0,0,.25) !important; }
+  75% { transform:translate3d(-2px,0,0) scale(1.025) rotate(-.5deg) !important; }
+  90% { transform:translate3d(2px,0,0) scale(1.015) rotate(.5deg) !important; }
+}
+#productModal #ageOptions .size-option-small.blinking-size:not(.selected) {
+  animation:index31SizeMotionAbsolute .65s linear infinite !important;
+  border:2px solid #111 !important;
+  background:#fff !important;
+  color:#111 !important;
+  opacity:1 !important;
+  z-index:5 !important;
+  position:relative !important;
+  will-change:transform,box-shadow;
+}
+#productModal #ageOptions .size-option-small.blinking-size:not(.selected)::before {
+  content:'' !important;
+  position:absolute !important;
+  inset:-4px !important;
+  border:2px solid rgba(212,175,55,.65) !important;
+  border-radius:11px !important;
+  pointer-events:none !important;
+  animation:index31SizeRing .65s ease-in-out infinite !important;
+}
+@keyframes index31SizeRing {
+  0%,100% { opacity:.15; transform:scale(.96); }
+  50% { opacity:1; transform:scale(1.06); }
+}
+#productModal #ageOptions .size-option-small.selected,
+#productModal #ageOptions .size-option-small.selected::before {
+  animation:none !important;
+  transform:none !important;
+}
+</style>
+<script id="index31-size-motion-absolute-script">
+(function(){
+  function forceSizeMotion(){
+    const box=document.getElementById('ageOptions');
+    if(!box) return;
+    box.querySelectorAll('.size-option-small').forEach(function(el){
+      if(!el.classList.contains('selected')){
+        el.classList.add('blinking-size');
+        el.style.setProperty('animation','index31SizeMotionAbsolute .65s linear infinite','important');
+        el.style.setProperty('transform-origin','center center','important');
+      }else{
+        el.classList.remove('blinking-size');
+        el.style.removeProperty('animation');
+      }
+    });
+  }
+  function init(){
+    forceSizeMotion();
+    setTimeout(forceSizeMotion,100);
+    setTimeout(forceSizeMotion,400);
+    const box=document.getElementById('ageOptions');
+    if(box && !box.dataset.motionFinalBound){
+      box.dataset.motionFinalBound='1';
+      new MutationObserver(function(){requestAnimationFrame(forceSizeMotion)})
+        .observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
