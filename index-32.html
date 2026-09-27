@@ -11404,7 +11404,105 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
   window.index32SyncDetailMessageFrame=sync;
 })();
 </script>
-\n<style id="index32-quantity-attention-final">\n/* بعد اختيار المقاس: لفت انتباه قصير للكمية وأزرار -/+ ثم يتوقف تماماً */\n@keyframes index32QuantityAttention {\n  0%   { transform:scale(1); box-shadow:0 0 0 0 rgba(0,0,0,0); }\n  18%  { transform:scale(1.035); box-shadow:0 0 0 4px rgba(212,175,55,.18), 0 5px 16px rgba(0,0,0,.10); }\n  36%  { transform:scale(.985); }\n  54%  { transform:scale(1.025); box-shadow:0 0 0 6px rgba(212,175,55,.14), 0 7px 20px rgba(0,0,0,.13); }\n  72%  { transform:scale(.995); }\n  100% { transform:scale(1); box-shadow:0 0 0 0 rgba(0,0,0,0); }\n}\n#productModal .modern-summary.index32-quantity-attention,\n#productModal .quantity-selector.index32-quantity-attention {\n  animation:index32QuantityAttention .95s ease-in-out 2 !important;\n  transform-origin:center center !important;\n  will-change:transform,box-shadow !important;\n}\n#productModal .quantity-selector.index32-quantity-attention .quantity-btn {\n  animation:index32QuantityAttention .95s ease-in-out 2 !important;\n}\n</style>\n<script id="index32-quantity-attention-final">\n(function(){\n  function pulseQuantity(){\n    const modal=document.getElementById('productModal');\n    if(!modal) return;\n    const summary=modal.querySelector('.modern-summary.post-size-element');\n    const selector=modal.querySelector('.quantity-selector.post-size-element');\n    [summary,selector].filter(Boolean).forEach(el=>{\n      el.classList.remove('index32-quantity-attention');\n      void el.offsetWidth;\n      el.classList.add('index32-quantity-attention');\n      clearTimeout(el.__index32QtyTimer);\n      el.__index32QtyTimer=setTimeout(()=>el.classList.remove('index32-quantity-attention'),2100);\n    });\n  }\n  function bind(){\n    const age=document.getElementById('ageOptions');\n    if(!age || age.dataset.qtyAttentionBound) return;\n    age.dataset.qtyAttentionBound='1';\n    age.addEventListener('click',function(e){\n      const btn=e.target.closest('.size-option-small');\n      if(!btn) return;\n      setTimeout(function(){\n        if(age.querySelector('.size-option-small.selected')) pulseQuantity();\n      },60);\n    });\n  }\n  function init(){\n    bind();\n    const modal=document.getElementById('productModal');\n    if(modal){\n      new MutationObserver(bind).observe(modal,{childList:true,subtree:true});\n    }\n  }\n  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();\n})();\n</script>\n</body>
+\n<style id="index32-quantity-attention-final">\n/* بعد اختيار المقاس: لفت انتباه قصير للكمية وأزرار -/+ ثم يتوقف تماماً */\n@keyframes index32QuantityAttention {\n  0%   { transform:scale(1); box-shadow:0 0 0 0 rgba(0,0,0,0); }\n  18%  { transform:scale(1.035); box-shadow:0 0 0 4px rgba(212,175,55,.18), 0 5px 16px rgba(0,0,0,.10); }\n  36%  { transform:scale(.985); }\n  54%  { transform:scale(1.025); box-shadow:0 0 0 6px rgba(212,175,55,.14), 0 7px 20px rgba(0,0,0,.13); }\n  72%  { transform:scale(.995); }\n  100% { transform:scale(1); box-shadow:0 0 0 0 rgba(0,0,0,0); }\n}\n#productModal .modern-summary.index32-quantity-attention,\n#productModal .quantity-selector.index32-quantity-attention {\n  animation:index32QuantityAttention .95s ease-in-out 2 !important;\n  transform-origin:center center !important;\n  will-change:transform,box-shadow !important;\n}\n#productModal .quantity-selector.index32-quantity-attention .quantity-btn {\n  animation:index32QuantityAttention .95s ease-in-out 2 !important;\n}\n</style>\n<script id="index32-quantity-attention-final">\n(function(){\n  function pulseQuantity(){\n    const modal=document.getElementById('productModal');\n    if(!modal) return;\n    const summary=modal.querySelector('.modern-summary.post-size-element');\n    const selector=modal.querySelector('.quantity-selector.post-size-element');\n    [summary,selector].filter(Boolean).forEach(el=>{\n      el.classList.remove('index32-quantity-attention');\n      void el.offsetWidth;\n      el.classList.add('index32-quantity-attention');\n      clearTimeout(el.__index32QtyTimer);\n      el.__index32QtyTimer=setTimeout(()=>el.classList.remove('index32-quantity-attention'),2100);\n    });\n  }\n  function bind(){\n    const age=document.getElementById('ageOptions');\n    if(!age || age.dataset.qtyAttentionBound) return;\n    age.dataset.qtyAttentionBound='1';\n    age.addEventListener('click',function(e){\n      const btn=e.target.closest('.size-option-small');\n      if(!btn) return;\n      setTimeout(function(){\n        if(age.querySelector('.size-option-small.selected')) pulseQuantity();\n      },60);\n    });\n  }\n  function init(){\n    bind();\n    const modal=document.getElementById('productModal');\n    if(modal){\n      new MutationObserver(bind).observe(modal,{childList:true,subtree:true});\n    }\n  }\n  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();\n})();\n</script>\n
+<style id="index32-final-attention-v3">
+/* وميض خفيف لحقل الولاية قبل الاختيار */
+@keyframes index32WilayaAttention {
+  0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.10)}
+  50%{transform:scale(1.012);box-shadow:0 0 0 3px rgba(0,0,0,.10)}
+}
+/* طبقة الانتباه قبل اختيار الولاية فقط */
+#smartRegionCard.wilaya-attention,
+#smartWilayaCard.wilaya-attention,
+#wilayaSelection.wilaya-attention,
+#wilayaSelect.wilaya-attention,
+#checkoutWilaya.wilaya-attention{
+  animation:index32WilayaAttention 1.15s ease-in-out infinite !important;
+}
+
+/* تصغير رسالتي الخصم والتوصيل المجاني 15% داخل تفاصيل المنتج */
+#productModal .product-promo-message,
+#productModal .free-delivery-message,
+#productModal .premium-badge-sale,
+#productModal .premium-badge-delivery,
+#productModal .detail-promo-message,
+#productModal .detail-free-delivery-message{
+  font-size:85% !important;
+}
+
+/* وميض + اهتزاز صغير لنوع التوصيل قبل اختيار أحد الخيارات */
+@keyframes index32DeliveryAttention {
+  0%,100%{transform:translateX(0) scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.08)}
+  25%{transform:translateX(-1px) scale(1.012)}
+  50%{transform:translateX(1px) scale(1.018);box-shadow:0 0 0 3px rgba(0,0,0,.08)}
+  75%{transform:translateX(-1px) scale(1.012)}
+}
+.smart-delivery-option.delivery-attention,
+.delivery-option.delivery-attention,
+.delivery-type-option.delivery-attention,
+.smart-delivery-card.delivery-attention,
+#deliveryOptions .delivery-attention,
+#deliveryTypeOptions .delivery-attention{
+  animation:index32DeliveryAttention 1s ease-in-out infinite !important;
+}
+
+/* عند الاختيار: إيقاف الحركة فورًا */
+.smart-delivery-option.selected,
+.delivery-option.selected,
+.delivery-type-option.selected,
+.smart-delivery-card.selected,
+#deliveryOptions .selected,
+#deliveryTypeOptions .selected,
+#smartRegionCard.selected,
+#wilayaSelect.selected{
+  animation:none !important;
+  transform:none !important;
+}
+</style>
+<script id="index32-final-attention-js">
+(function(){
+  const wilayaSelectors=[
+    '#smartRegionCard','#smartWilayaCard','#wilayaSelection','#wilayaSelect','#checkoutWilaya',
+    'select[name="wilaya"]','select[id*="wilaya" i]'
+  ];
+  const deliverySelectors=[
+    '.smart-delivery-option','.delivery-option','.delivery-type-option','.smart-delivery-card',
+    '#deliveryOptions button','#deliveryTypeOptions button',
+    '#deliveryOptions > *','#deliveryTypeOptions > *'
+  ];
+  function allUnique(selectors){
+    const a=[]; selectors.forEach(sel=>{try{document.querySelectorAll(sel).forEach(e=>{if(!a.includes(e))a.push(e)})}catch(_){}}); return a;
+  }
+  function wilayaChosen(){
+    const el=document.querySelector('select[name="wilaya"],select[id*="wilaya" i]');
+    return !!(el && String(el.value||'').trim());
+  }
+  function deliveryChosen(){
+    return !!document.querySelector('.smart-delivery-option.selected,.delivery-option.selected,.delivery-type-option.selected,.smart-delivery-card.selected,#deliveryOptions .selected,#deliveryTypeOptions .selected');
+  }
+  function refresh(){
+    const w=allUnique(wilayaSelectors);
+    const wc=wilayaChosen();
+    w.forEach(e=>e.classList.toggle('wilaya-attention',!wc));
+    const d=allUnique(deliverySelectors);
+    const dc=deliveryChosen();
+    d.forEach(e=>e.classList.toggle('delivery-attention',!dc));
+  }
+  document.addEventListener('change',refresh,true);
+  document.addEventListener('click',function(e){
+    const t=e.target.closest('.smart-delivery-option,.delivery-option,.delivery-type-option,.smart-delivery-card,#deliveryOptions button,#deliveryTypeOptions button');
+    if(t) setTimeout(refresh,20);
+    const w=e.target.closest('#smartRegionCard,#smartWilayaCard,#wilayaSelection');
+    if(w) setTimeout(refresh,20);
+  },true);
+  const obs=new MutationObserver(()=>refresh());
+  obs.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','value']});
+  refresh();
+  setTimeout(refresh,300);
+  setTimeout(refresh,1000);
+})();
+</script>
+</body>
 
 <style id="index31-size-motion-absolute-final">
 /* حركة المقاسات النهائية: لا تعتمد على لون الخلفية */
