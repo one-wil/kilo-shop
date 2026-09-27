@@ -11801,3 +11801,53 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
+
+<style id="index32-final-request-v2">
+/* الرسائل في تفاصيل المنتج: تصغير بسيط للخط وإلغاء أي نبض نهائياً */
+#productModal .product-modal-image-badges .discount-message,
+#productModal .product-modal-image-badges .free-delivery-message{
+  font-size:8.5px !important;
+  animation:none !important;
+  transform:none !important;
+}
+#productModal .product-modal-image-badges .discount-message i,
+#productModal .product-modal-image-badges .free-delivery-message i{
+  font-size:11px !important;
+}
+
+/* المرحلة 2: حقل اختيار الولاية يهتز حتى يتم اختيار ولاية */
+#page2 #wilaya.smart-wilaya-pulse{
+  animation:index32WilayaAttention .78s ease-in-out infinite !important;
+  transform-origin:center !important;
+  will-change:transform,box-shadow !important;
+}
+@keyframes index32WilayaAttention{
+  0%,100%{transform:translateX(0) scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.18)}
+  20%{transform:translateX(-2px) scale(1.012)}
+  40%{transform:translateX(2px) scale(1.018)}
+  60%{transform:translateX(-2px) scale(1.012)}
+  80%{transform:translateX(2px) scale(1.018)}
+  50%{box-shadow:0 0 0 4px rgba(0,0,0,.08),0 5px 14px rgba(0,0,0,.14)}
+}
+
+/* المرحلة 3: خيارات نوع التوصيل تهتز حتى يختار الزبون واحداً منها */
+#page2 .smart-delivery-option.smart-delivery-pulse{
+  animation:index32DeliveryAttention .78s ease-in-out infinite !important;
+  transform-origin:center !important;
+  will-change:transform,box-shadow !important;
+}
+@keyframes index32DeliveryAttention{
+  0%,100%{transform:translateX(0) scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.16)}
+  20%{transform:translateX(-2px) scale(1.012)}
+  40%{transform:translateX(2px) scale(1.018)}
+  60%{transform:translateX(-2px) scale(1.012)}
+  80%{transform:translateX(2px) scale(1.018)}
+  50%{box-shadow:0 0 0 4px rgba(0,0,0,.07),0 5px 14px rgba(0,0,0,.13)}
+}
+
+/* لا حركة بعد الاختيار */
+#page2 #wilaya:not(.smart-wilaya-pulse),
+#page2 .smart-delivery-option:not(.smart-delivery-pulse){
+  animation:none !important;
+}
+</style>
