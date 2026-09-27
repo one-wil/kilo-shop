@@ -7122,11 +7122,7 @@
                     discountMessage.classList.remove('fast-pulse');
                 }
             } else {
-                // عند عدم وجود خصم: نستعمل نفس مكان الرسالة لعبارة تعريفية قصيرة.
-                discountText.textContent = 'منتجات مختارة بعناية';
-                const discountIcon = discountMessage ? discountMessage.querySelector('i') : null;
-                if (discountIcon) discountIcon.className = 'fas fa-star';
-                discountMessage.style.display = 'flex';
+                discountMessage.style.display = 'none';
                 discountMessage.classList.remove('fast-pulse');
             }
             
@@ -7183,10 +7179,9 @@
                 const deliveryEnabled = true; // التوصيل الآمن/الدفع بعد الاستلام هو الرسالة البديلة دائماً عند غياب المجاني.
                 // إذا لم يوجد أي خصم، نحذف رسالة الخصم نهائياً ولا نحجز لها مكاناً.
                 if (discountMessage) {
-                    // حتى عند غياب الخصم تبقى الرسالة التعريفية في نفس المكان.
-                    discountMessage.style.display = 'flex';
+                    discountMessage.style.display = promoEnabled ? 'flex' : 'none';
                 }
-                imageBadges.classList.toggle('has-image-messages', true);
+                imageBadges.classList.toggle('has-image-messages', promoEnabled || deliveryEnabled);
                 imageBadges.style.display = 'flex';
             }
 
@@ -11735,119 +11730,5 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
   #productModal .product-modal-image-badges .free-delivery-message i{
     font-size:10px !important;
   }
-}
-</style>
-
-
-<style id="index32-detail-message-final-small">
-/* رسائل تفاصيل المنتج: خط أصغر وبدون أي نبض */
-#productModal .product-modal-image-badges .discount-message,
-#productModal .product-modal-image-badges .free-delivery-message{
-  font-size:8px !important;
-  min-height:25px !important;
-  padding:4px 8px !important;
-  animation:none !important;
-  transform:none !important;
-  box-shadow:0 2px 8px rgba(0,0,0,.05) !important;
-}
-#productModal .product-modal-image-badges .discount-message i,
-#productModal .product-modal-image-badges .free-delivery-message i{
-  font-size:10px !important;
-}
-@media(max-width:600px){
-  #productModal .product-modal-image-badges .discount-message,
-  #productModal .product-modal-image-badges .free-delivery-message{
-    font-size:7px !important;
-    min-height:23px !important;
-    padding:4px 7px !important;
-  }
-  #productModal .product-modal-image-badges .discount-message i,
-  #productModal .product-modal-image-badges .free-delivery-message i{
-    font-size:9px !important;
-  }
-}
-</style>
-<script id="index32-size-click-scroll-100">
-(function(){
-  function scrollModalToBottom100(){
-    const modal=document.getElementById('productModal');
-    const body=modal ? modal.querySelector('.product-modal-body') : null;
-    if(!body) return;
-    requestAnimationFrame(function(){
-      setTimeout(function(){
-        body.scrollTo({top:body.scrollHeight, behavior:'smooth'});
-      },80);
-    });
-  }
-  function bind(){
-    const age=document.getElementById('ageOptions');
-    if(!age || age.dataset.scroll100Bound) return;
-    age.dataset.scroll100Bound='1';
-    age.addEventListener('click',function(e){
-      const btn=e.target.closest('.size-option-small');
-      if(!btn) return;
-      setTimeout(function(){
-        if(age.querySelector('.size-option-small.selected')) scrollModalToBottom100();
-      },100);
-    });
-  }
-  function init(){
-    bind();
-    const modal=document.getElementById('productModal');
-    if(modal){
-      new MutationObserver(bind).observe(modal,{childList:true,subtree:true});
-    }
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
-})();
-</script>
-
-<style id="index32-final-request-v2">
-/* الرسائل في تفاصيل المنتج: تصغير بسيط للخط وإلغاء أي نبض نهائياً */
-#productModal .product-modal-image-badges .discount-message,
-#productModal .product-modal-image-badges .free-delivery-message{
-  font-size:8.5px !important;
-  animation:none !important;
-  transform:none !important;
-}
-#productModal .product-modal-image-badges .discount-message i,
-#productModal .product-modal-image-badges .free-delivery-message i{
-  font-size:11px !important;
-}
-
-/* المرحلة 2: حقل اختيار الولاية يهتز حتى يتم اختيار ولاية */
-#page2 #wilaya.smart-wilaya-pulse{
-  animation:index32WilayaAttention .78s ease-in-out infinite !important;
-  transform-origin:center !important;
-  will-change:transform,box-shadow !important;
-}
-@keyframes index32WilayaAttention{
-  0%,100%{transform:translateX(0) scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.18)}
-  20%{transform:translateX(-2px) scale(1.012)}
-  40%{transform:translateX(2px) scale(1.018)}
-  60%{transform:translateX(-2px) scale(1.012)}
-  80%{transform:translateX(2px) scale(1.018)}
-  50%{box-shadow:0 0 0 4px rgba(0,0,0,.08),0 5px 14px rgba(0,0,0,.14)}
-}
-
-/* المرحلة 3: خيارات نوع التوصيل تهتز حتى يختار الزبون واحداً منها */
-#page2 .smart-delivery-option.smart-delivery-pulse{
-  animation:index32DeliveryAttention .78s ease-in-out infinite !important;
-  transform-origin:center !important;
-  will-change:transform,box-shadow !important;
-}
-@keyframes index32DeliveryAttention{
-  0%,100%{transform:translateX(0) scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.16)}
-  20%{transform:translateX(-2px) scale(1.012)}
-  40%{transform:translateX(2px) scale(1.018)}
-  60%{transform:translateX(-2px) scale(1.012)}
-  80%{transform:translateX(2px) scale(1.018)}
-  50%{box-shadow:0 0 0 4px rgba(0,0,0,.07),0 5px 14px rgba(0,0,0,.13)}
-}
-
-/* لا حركة بعد الاختيار */
-#page2 #wilaya:not(.smart-wilaya-pulse),
-#page2 .smart-delivery-option:not(.smart-delivery-pulse){
-  animation:none !important;
 }
 </style>
