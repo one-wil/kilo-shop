@@ -7270,22 +7270,21 @@
                             updateProductImageByColor(productKey, selectedColors[0]);
                             showAvailableSizesForColor(productKey, selectedColors[0]);
 
-                            // المرحلة الثانية: بعد تفعيل لون واحد على الأقل يظهر جدول القياسات ثم المقاسات.
+                            // بعد اختيار اللون: يظهر المقاس فقط.
+                            // كل ما بعد المقاس يبقى مخفياً حتى يختار الزبون المقاس فعلياً.
                             const tableAfterColor = document.getElementById('measurementsTableContainer');
                             const sizeAfterColor = document.getElementById('sizeOptionsContainer');
                             const guideAfterColor = getEnabledSizeGuide(STORE_CONFIG.PRODUCTS[productKey]);
                             if (tableAfterColor) {
-                                tableAfterColor.classList.remove('stage-hidden');
-                                tableAfterColor.style.display = guideAfterColor.length > 0 ? 'block' : 'none';
-                                tableAfterColor.classList.toggle('visible', guideAfterColor.length > 0);
+                                tableAfterColor.classList.add('stage-hidden');
+                                tableAfterColor.classList.remove('visible');
+                                tableAfterColor.style.setProperty('display', 'none', 'important');
                             }
                             if (sizeAfterColor) {
                                 sizeAfterColor.classList.remove('stage-hidden');
-                                sizeAfterColor.style.display = 'block';
+                                sizeAfterColor.style.setProperty('display', 'block', 'important');
                             }
-                            // بعد اختيار اللون: لا ننتظر اختيار المقاس لإظهار بقية الحقول؛
-                            // تظهر المقاسات ثم الجدول ثم باقي الحقول بالتتابع.
-                            revealProductFieldsSequentiallyAfterColor();
+                            setAfterSizeReveal(false);
 
                             requestAnimationFrame(() => {
                                 const sizeBox = document.getElementById('sizeOptionsContainer');
@@ -7459,7 +7458,41 @@
                         sizeStepCard.classList.toggle('step-attention', selectedAges.length === 0);
                     }
                     stopSizeBlinking(ageOption);
-                    setAfterSizeReveal(selectedAges.length > 0);
+
+                    // لا يظهر أي عنصر تالٍ قبل اختيار المقاس.
+                    // بعد اختيار المقاس فقط نُظهر جدول القياسات ثم بقية الحقول.
+                    if (selectedAges.length > 0) {
+                        const tableAfterSize = document.getElementById('measurementsTableContainer');
+                        if (tableAfterSize) {
+                            const hasRows = tableAfterSize.querySelectorAll('tbody tr').length > 0;
+                            tableAfterSize.classList.remove('stage-hidden');
+                            tableAfterSize.classList.add('visible');
+                            tableAfterSize.style.setProperty('display', hasRows ? 'block' : 'none', 'important');
+                        }
+                        setAfterSizeReveal(true);
+
+                        // حركة خفيفة متسلسلة للعناصر التي تأتي بعد اختيار المقاس.
+                        const afterSizeFields = [
+                            document.getElementById('measurementsTableContainer'),
+                            document.getElementById('discountMessage'),
+                            document.getElementById('freeDeliveryMessage'),
+                            document.querySelector('.modern-summary.post-size-element'),
+                            document.querySelector('.quantity-selector.post-size-element'),
+                            document.querySelector('.modern-trust.post-size-element'),
+                            document.querySelector('.modern-actions.post-size-element')
+                        ].filter(Boolean);
+                        afterSizeFields.forEach((el, i) => {
+                            el.classList.remove('index31-seq-attention');
+                            setTimeout(() => {
+                                el.classList.add('index31-seq-attention');
+                                setTimeout(() => el.classList.remove('index31-seq-attention'), 1000);
+                            }, i * 350);
+                        });
+                    } else {
+                        const tableAfterSize = document.getElementById('measurementsTableContainer');
+                        if (tableAfterSize) tableAfterSize.style.setProperty('display', 'none', 'important');
+                        setAfterSizeReveal(false);
+                    }
 
                     requestAnimationFrame(() => {
                         const discount = document.getElementById('discountMessage');
