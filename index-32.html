@@ -7122,7 +7122,11 @@
                     discountMessage.classList.remove('fast-pulse');
                 }
             } else {
-                discountMessage.style.display = 'none';
+                // عند عدم وجود خصم: نستعمل نفس مكان الرسالة لعبارة تعريفية قصيرة.
+                discountText.textContent = 'منتجات مختارة بعناية';
+                const discountIcon = discountMessage ? discountMessage.querySelector('i') : null;
+                if (discountIcon) discountIcon.className = 'fas fa-star';
+                discountMessage.style.display = 'flex';
                 discountMessage.classList.remove('fast-pulse');
             }
             
@@ -7179,9 +7183,10 @@
                 const deliveryEnabled = true; // التوصيل الآمن/الدفع بعد الاستلام هو الرسالة البديلة دائماً عند غياب المجاني.
                 // إذا لم يوجد أي خصم، نحذف رسالة الخصم نهائياً ولا نحجز لها مكاناً.
                 if (discountMessage) {
-                    discountMessage.style.display = promoEnabled ? 'flex' : 'none';
+                    // حتى عند غياب الخصم تبقى الرسالة التعريفية في نفس المكان.
+                    discountMessage.style.display = 'flex';
                 }
-                imageBadges.classList.toggle('has-image-messages', promoEnabled || deliveryEnabled);
+                imageBadges.classList.toggle('has-image-messages', true);
                 imageBadges.style.display = 'flex';
             }
 
@@ -11732,3 +11737,67 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
   }
 }
 </style>
+
+
+<style id="index32-detail-message-final-small">
+/* رسائل تفاصيل المنتج: خط أصغر وبدون أي نبض */
+#productModal .product-modal-image-badges .discount-message,
+#productModal .product-modal-image-badges .free-delivery-message{
+  font-size:8px !important;
+  min-height:25px !important;
+  padding:4px 8px !important;
+  animation:none !important;
+  transform:none !important;
+  box-shadow:0 2px 8px rgba(0,0,0,.05) !important;
+}
+#productModal .product-modal-image-badges .discount-message i,
+#productModal .product-modal-image-badges .free-delivery-message i{
+  font-size:10px !important;
+}
+@media(max-width:600px){
+  #productModal .product-modal-image-badges .discount-message,
+  #productModal .product-modal-image-badges .free-delivery-message{
+    font-size:7px !important;
+    min-height:23px !important;
+    padding:4px 7px !important;
+  }
+  #productModal .product-modal-image-badges .discount-message i,
+  #productModal .product-modal-image-badges .free-delivery-message i{
+    font-size:9px !important;
+  }
+}
+</style>
+<script id="index32-size-click-scroll-100">
+(function(){
+  function scrollModalToBottom100(){
+    const modal=document.getElementById('productModal');
+    const body=modal ? modal.querySelector('.product-modal-body') : null;
+    if(!body) return;
+    requestAnimationFrame(function(){
+      setTimeout(function(){
+        body.scrollTo({top:body.scrollHeight, behavior:'smooth'});
+      },80);
+    });
+  }
+  function bind(){
+    const age=document.getElementById('ageOptions');
+    if(!age || age.dataset.scroll100Bound) return;
+    age.dataset.scroll100Bound='1';
+    age.addEventListener('click',function(e){
+      const btn=e.target.closest('.size-option-small');
+      if(!btn) return;
+      setTimeout(function(){
+        if(age.querySelector('.size-option-small.selected')) scrollModalToBottom100();
+      },100);
+    });
+  }
+  function init(){
+    bind();
+    const modal=document.getElementById('productModal');
+    if(modal){
+      new MutationObserver(bind).observe(modal,{childList:true,subtree:true});
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
