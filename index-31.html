@@ -11226,3 +11226,161 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
     }
 }
 </style>
+
+<style id="index31-final-modal-layout-v2">
+/* ===== FINAL V2: ترتيب تفاصيل المنتج + اهتزاز المقاسات ===== */
+#productModal .modern-product-details .modern-gallery{
+    display:flex !important;
+    flex-direction:column !important;
+}
+
+/* العناصر التي ننقلها برمجياً إلى أسفل الصورة الكبيرة */
+#productModal .modern-gallery > .modern-product-head,
+#productModal .modern-gallery > .modern-price-row,
+#productModal .modern-gallery > .modern-choice-card,
+#productModal .modern-gallery > #sizeOptionsContainer,
+#productModal .modern-gallery > #measurementsTableContainer{
+    width:100% !important;
+    box-sizing:border-box !important;
+}
+
+#productModal .modern-gallery > .modern-product-head{
+    margin-top:12px !important;
+}
+#productModal .modern-gallery > .modern-price-row{
+    margin:6px 0 8px !important;
+}
+#productModal .modern-gallery > .color-selector-under-gallery{
+    margin-top:2px !important;
+}
+
+/* المقاسات مباشرة تحت الألوان، ثم جدول القياسات */
+#productModal .modern-gallery > #sizeOptionsContainer{
+    order:20 !important;
+    margin-top:7px !important;
+}
+#productModal .modern-gallery > #measurementsTableContainer{
+    order:30 !important;
+    margin-top:7px !important;
+}
+#productModal .modern-gallery > .modern-choice-card.color-selector-under-gallery{
+    order:10 !important;
+}
+
+/* اهتزاز واضح فعلياً قبل اختيار المقاس */
+@keyframes index31SizeVibrationStrongV2{
+    0%,100%{transform:translate3d(0,0,0) scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.22)}
+    12%{transform:translate3d(-3px,0,0) scale(1.02)}
+    24%{transform:translate3d(3px,0,0) scale(1.025)}
+    36%{transform:translate3d(-3px,0,0) scale(1.02)}
+    48%{transform:translate3d(3px,0,0) scale(1.025);box-shadow:0 0 0 4px rgba(0,0,0,.08),0 0 14px rgba(0,0,0,.28)}
+    60%{transform:translate3d(-2px,0,0) scale(1.02)}
+    72%{transform:translate3d(2px,0,0) scale(1.02)}
+    84%{transform:translate3d(-1px,0,0) scale(1.01)}
+}
+#productModal #ageOptions .size-option-small.blinking-size:not(.selected){
+    animation:index31SizeVibrationStrongV2 .72s ease-in-out infinite !important;
+    border:2px solid #111 !important;
+    color:#D4AF37 !important;
+    opacity:1 !important;
+    will-change:transform,box-shadow;
+}
+#productModal #ageOptions .size-option-small.selected{
+    animation:none !important;
+    transform:none !important;
+}
+</style>
+
+<script id="index31-final-modal-layout-v2-script">
+(function(){
+    'use strict';
+
+    let arranging=false;
+
+    function arrangeProductModal(){
+        if(arranging) return;
+        arranging=true;
+        const modal=document.getElementById('productModal');
+        if(!modal) return;
+        const gallery=modal.querySelector('.modern-gallery');
+        const info=modal.querySelector('.modern-info');
+        if(!gallery || !info) return;
+
+        const main=document.getElementById('modernGalleryMain');
+        const head=info.querySelector('.modern-product-head');
+        const price=document.getElementById('productModalPriceContainer');
+        const colorCard=document.getElementById('colorOptions')?.closest('.modern-choice-card');
+        const sizeCard=document.getElementById('sizeOptionsContainer');
+        const measurements=document.getElementById('measurementsTableContainer');
+        const thumbs=document.getElementById('modernProductThumbs');
+        const caption=document.getElementById('modernGalleryCaption');
+
+        if(!main || !head || !price || !colorCard || !sizeCard || !measurements){ arranging=false; return; }
+
+        /* الصورة الكبيرة أولاً، ثم الاسم والوصف والسعر، ثم الألوان، ثم المقاسات، ثم الجدول. */
+        gallery.appendChild(main);
+        gallery.appendChild(head);
+        gallery.appendChild(price);
+        gallery.appendChild(colorCard);
+        gallery.appendChild(sizeCard);
+        gallery.appendChild(measurements);
+
+        /* صور المنتج المصغرة تبقى في المعرض ولكن بعد منطقة الاختيار، حتى لا تفصل الاسم/السعر عن الصورة الكبيرة. */
+        if(thumbs) gallery.appendChild(thumbs);
+        if(caption) gallery.appendChild(caption);
+
+        colorCard.classList.add('color-selector-under-gallery');
+        arranging=false;
+    }
+
+    function forceSizeAttention(){
+        const box=document.getElementById('ageOptions');
+        if(!box) return;
+        box.querySelectorAll('.size-option-small').forEach(function(el){
+            if(!el.classList.contains('selected')){
+                el.classList.add('blinking-size');
+                el.style.setProperty('animation','index31SizeVibrationStrongV2 .72s ease-in-out infinite','important');
+                el.style.setProperty('border','2px solid #111','important');
+                el.style.setProperty('color','#D4AF37','important');
+                el.style.setProperty('opacity','1','important');
+            }else{
+                el.classList.remove('blinking-size');
+                el.style.removeProperty('animation');
+            }
+        });
+    }
+
+    function bindSizeObserver(){
+        const box=document.getElementById('ageOptions');
+        if(!box || box.dataset.index31V2Bound==='1') return;
+        box.dataset.index31V2Bound='1';
+        const observer=new MutationObserver(function(){
+            requestAnimationFrame(forceSizeAttention);
+        });
+        observer.observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+        forceSizeAttention();
+    }
+
+    function init(){
+        arrangeProductModal();
+        bindSizeObserver();
+        setTimeout(function(){arrangeProductModal();bindSizeObserver();forceSizeAttention();},100);
+        setTimeout(function(){arrangeProductModal();forceSizeAttention();},500);
+    }
+
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+    else init();
+
+    const modal=document.getElementById('productModal');
+    if(modal){
+        const mo=new MutationObserver(function(){
+            if(arranging) return;
+            arrangeProductModal();
+            bindSizeObserver();
+            const box=document.getElementById('ageOptions');
+            if(box && box.children.length) requestAnimationFrame(forceSizeAttention);
+        });
+        mo.observe(modal,{childList:true,subtree:true});
+    }
+})();
+</script>
