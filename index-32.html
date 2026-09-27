@@ -7122,7 +7122,11 @@
                     discountMessage.classList.remove('fast-pulse');
                 }
             } else {
-                discountMessage.style.display = 'none';
+                // عند عدم وجود خصم: نستعمل نفس مكان الرسالة لعبارة تعريفية قصيرة.
+                discountText.textContent = 'منتجات مختارة بعناية';
+                const discountIcon = discountMessage ? discountMessage.querySelector('i') : null;
+                if (discountIcon) discountIcon.className = 'fas fa-star';
+                discountMessage.style.display = 'flex';
                 discountMessage.classList.remove('fast-pulse');
             }
             
@@ -7179,9 +7183,10 @@
                 const deliveryEnabled = true; // التوصيل الآمن/الدفع بعد الاستلام هو الرسالة البديلة دائماً عند غياب المجاني.
                 // إذا لم يوجد أي خصم، نحذف رسالة الخصم نهائياً ولا نحجز لها مكاناً.
                 if (discountMessage) {
-                    discountMessage.style.display = promoEnabled ? 'flex' : 'none';
+                    // حتى عند غياب الخصم تبقى الرسالة التعريفية في نفس المكان.
+                    discountMessage.style.display = 'flex';
                 }
-                imageBadges.classList.toggle('has-image-messages', promoEnabled || deliveryEnabled);
+                imageBadges.classList.toggle('has-image-messages', true);
                 imageBadges.style.display = 'flex';
             }
 
@@ -7203,6 +7208,7 @@
             // تجهيز جدول القياسات مسبقاً، لكن لا يظهر إلا بعد اختيار اللون.
             enabledSizes.forEach(item => {
                 const tr = document.createElement('tr');
+                tr.dataset.size = String(item.size || '').trim();
                 tr.innerHTML = `
                     <td><strong>${item.size}</strong></td>
                     <td><i class="fas fa-arrows-up-down"></i> ${item.heightFrom} - ${item.heightTo} سم</td>
@@ -7408,6 +7414,27 @@
             };
         }
 
+        function highlightSelectedSizeInMeasurements() {
+            const table = document.getElementById('measurementsTableContainer');
+            const body = document.getElementById('measurementsTableBody');
+            if (!table || !body) return;
+
+            // لا نفعل شيئاً إذا كان جدول القياسات غير مفعّل/فارغاً.
+            const rows = body.querySelectorAll('tr');
+            if (!rows.length) return;
+
+            const selected = Array.from(document.querySelectorAll('#productModal #ageOptions .size-option-small.selected'))
+                .map(el => String(el.dataset.size || '').trim())
+                .filter(Boolean);
+
+            rows.forEach(row => {
+                const rowSize = String(row.dataset.size || row.querySelector('td strong')?.textContent || '').trim();
+                const active = selected.includes(rowSize);
+                row.classList.toggle('measurement-size-selected', active);
+                row.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+        }
+
         function showAvailableSizesForColor(productKey, color) {
             const product = STORE_CONFIG.PRODUCTS[productKey];
             const ageOptions = document.getElementById('ageOptions');
@@ -7459,6 +7486,7 @@
                     selectedAges = Array.from(document.querySelectorAll('#ageOptions .size-option-small.selected'))
                         .map(option => option.dataset.age);
                     selectedAge = selectedAges[0] || null;
+                    highlightSelectedSizeInMeasurements();
                     const selectedSizes = Array.from(document.querySelectorAll('#ageOptions .size-option-small.selected'))
                         .map(option => option.dataset.size);
                     const ss = document.getElementById('modernSelectedSize');
@@ -7530,6 +7558,7 @@
             });
 
             if (selectedAges.length) {
+                highlightSelectedSizeInMeasurements();
                 const selectedSizes = Array.from(ageOptions.querySelectorAll('.size-option-small.selected')).map(o => o.dataset.size);
                 const ss = document.getElementById('modernSelectedSize');
                 if (ss) ss.textContent = selectedSizes.join('، ') || 'لم يتم الاختيار';
@@ -11399,7 +11428,60 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
   window.index32SyncDetailMessageFrame=sync;
 })();
 </script>
-\n<style id="index32-quantity-attention-final">\n/* بعد اختيار المقاس: لفت انتباه قصير للكمية وأزرار -/+ ثم يتوقف تماماً */\n@keyframes index32QuantityAttention {\n  0%   { transform:scale(1); box-shadow:0 0 0 0 rgba(0,0,0,0); }\n  18%  { transform:scale(1.035); box-shadow:0 0 0 4px rgba(212,175,55,.18), 0 5px 16px rgba(0,0,0,.10); }\n  36%  { transform:scale(.985); }\n  54%  { transform:scale(1.025); box-shadow:0 0 0 6px rgba(212,175,55,.14), 0 7px 20px rgba(0,0,0,.13); }\n  72%  { transform:scale(.995); }\n  100% { transform:scale(1); box-shadow:0 0 0 0 rgba(0,0,0,0); }\n}\n#productModal .modern-summary.index32-quantity-attention,\n#productModal .quantity-selector.index32-quantity-attention {\n  animation:index32QuantityAttention .95s ease-in-out 2 !important;\n  transform-origin:center center !important;\n  will-change:transform,box-shadow !important;\n}\n#productModal .quantity-selector.index32-quantity-attention .quantity-btn {\n  animation:index32QuantityAttention .95s ease-in-out 2 !important;\n}\n</style>\n<script id="index32-quantity-attention-final">\n(function(){\n  function pulseQuantity(){\n    const modal=document.getElementById('productModal');\n    if(!modal) return;\n    const summary=modal.querySelector('.modern-summary.post-size-element');\n    const selector=modal.querySelector('.quantity-selector.post-size-element');\n    [summary,selector].filter(Boolean).forEach(el=>{\n      el.classList.remove('index32-quantity-attention');\n      void el.offsetWidth;\n      el.classList.add('index32-quantity-attention');\n      clearTimeout(el.__index32QtyTimer);\n      el.__index32QtyTimer=setTimeout(()=>el.classList.remove('index32-quantity-attention'),2100);\n    });\n  }\n  function bind(){\n    const age=document.getElementById('ageOptions');\n    if(!age || age.dataset.qtyAttentionBound) return;\n    age.dataset.qtyAttentionBound='1';\n    age.addEventListener('click',function(e){\n      const btn=e.target.closest('.size-option-small');\n      if(!btn) return;\n      setTimeout(function(){\n        if(age.querySelector('.size-option-small.selected')) pulseQuantity();\n      },60);\n    });\n  }\n  function init(){\n    bind();\n    const modal=document.getElementById('productModal');\n    if(modal){\n      new MutationObserver(bind).observe(modal,{childList:true,subtree:true});\n    }\n  }\n  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();\n})();\n</script>\n</body>
+\n<style id="index32-quantity-attention-final">\n/* بعد اختيار المقاس: لفت انتباه قصير للكمية وأزرار -/+ ثم يتوقف تماماً */\n@keyframes index32QuantityAttention {\n  0%   { transform:scale(1); box-shadow:0 0 0 0 rgba(0,0,0,0); }\n  18%  { transform:scale(1.035); box-shadow:0 0 0 4px rgba(212,175,55,.18), 0 5px 16px rgba(0,0,0,.10); }\n  36%  { transform:scale(.985); }\n  54%  { transform:scale(1.025); box-shadow:0 0 0 6px rgba(212,175,55,.14), 0 7px 20px rgba(0,0,0,.13); }\n  72%  { transform:scale(.995); }\n  100% { transform:scale(1); box-shadow:0 0 0 0 rgba(0,0,0,0); }\n}\n#productModal .modern-summary.index32-quantity-attention,\n#productModal .quantity-selector.index32-quantity-attention {\n  animation:index32QuantityAttention .95s ease-in-out 2 !important;\n  transform-origin:center center !important;\n  will-change:transform,box-shadow !important;\n}\n#productModal .quantity-selector.index32-quantity-attention .quantity-btn {\n  animation:index32QuantityAttention .95s ease-in-out 2 !important;\n}\n</style>\n<script id="index32-quantity-attention-final">\n(function(){\n  function pulseQuantity(){\n    const modal=document.getElementById('productModal');\n    if(!modal) return;\n    const summary=modal.querySelector('.modern-summary.post-size-element');\n    const selector=modal.querySelector('.quantity-selector.post-size-element');\n    [summary,selector].filter(Boolean).forEach(el=>{\n      el.classList.remove('index32-quantity-attention');\n      void el.offsetWidth;\n      el.classList.add('index32-quantity-attention');\n      clearTimeout(el.__index32QtyTimer);\n      el.__index32QtyTimer=setTimeout(()=>el.classList.remove('index32-quantity-attention'),2100);\n    });\n  }\n  function bind(){\n    const age=document.getElementById('ageOptions');\n    if(!age || age.dataset.qtyAttentionBound) return;\n    age.dataset.qtyAttentionBound='1';\n    age.addEventListener('click',function(e){\n      const btn=e.target.closest('.size-option-small');\n      if(!btn) return;\n      setTimeout(function(){\n        if(age.querySelector('.size-option-small.selected')) pulseQuantity();\n      },60);\n    });\n  }\n  function init(){\n    bind();\n    const modal=document.getElementById('productModal');\n    if(modal){\n      new MutationObserver(bind).observe(modal,{childList:true,subtree:true});\n    }\n  }\n  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();\n})();\n</script>\n
+<style id="index32-final-attention-v3">
+/* وميض خفيف لحقل الولاية قبل الاختيار */
+@keyframes index32WilayaAttention {
+  0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.10)}
+  50%{transform:scale(1.012);box-shadow:0 0 0 3px rgba(0,0,0,.10)}
+}
+/* طبقة الانتباه قبل اختيار الولاية فقط */
+#smartRegionCard.wilaya-attention,
+#smartWilayaCard.wilaya-attention,
+#wilayaSelection.wilaya-attention,
+#wilayaSelect.wilaya-attention,
+#checkoutWilaya.wilaya-attention{
+
+
+<style id="index32-delivery-motion-repair">
+@keyframes deliveryCardAttention32{0%,100%{transform:translateX(0) scale(1);border-color:#9fc9e3;box-shadow:0 0 0 0 transparent}25%{transform:translateX(-3px) scale(1.018);border-color:#008be6;box-shadow:0 0 0 3px rgba(0,136,230,.14)}50%{transform:translateX(3px) scale(1.025);border-color:#087ac6;box-shadow:0 0 0 5px rgba(0,136,230,.23),0 5px 13px rgba(0,136,230,.12)}75%{transform:translateX(-3px) scale(1.018);border-color:#008be6;box-shadow:0 0 0 3px rgba(0,136,230,.14)}}
+#page2 #smartDeliveryPanel .smart-delivery-option.delivery-attention:not(.selected){animation:deliveryCardAttention32 .9s ease-in-out infinite!important;transform-origin:center!important;will-change:transform,box-shadow!important;border-width:2px!important}
+#page2 #smartDeliveryPanel .smart-delivery-option.selected{animation:none!important;transform:none!important}
+</style>
+<script id="index32-delivery-motion-repair-js">
+(function(){function refresh(){const panel=document.getElementById('smartDeliveryPanel');if(!panel)return;const cards=Array.from(panel.querySelectorAll('.smart-delivery-option'));const wilaya=!!document.getElementById('wilaya')?.value;const chosen=cards.some(e=>e.classList.contains('selected'));const visible=panel.getClientRects().length>0;cards.forEach(e=>e.classList.toggle('delivery-attention',wilaya&&visible&&!chosen))}document.addEventListener('change',refresh,true);document.addEventListener('click',e=>{if(e.target.closest('#smartDeliveryPanel,#smartRegionPanel')){requestAnimationFrame(refresh);setTimeout(refresh,600)}},true);setInterval(refresh,700);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh()})();
+</script>
+
+<style id="index32-selected-measurement-row">
+#productModal #measurementsTableBody tr.measurement-size-selected{
+  background:linear-gradient(90deg,rgba(0,139,230,.16),rgba(0,139,230,.06)) !important;
+  outline:2px solid #1597df !important;
+  outline-offset:-2px !important;
+  box-shadow:inset 5px 0 0 #1597df, 0 3px 10px rgba(21,151,223,.12) !important;
+  transform:scale(1.012);
+  transition:background .2s ease,box-shadow .2s ease,transform .2s ease !important;
+}
+#productModal #measurementsTableBody tr.measurement-size-selected td:first-child strong{
+  color:#0878bd !important;
+  font-weight:900 !important;
+}
+#productModal #measurementsTableBody tr.measurement-size-selected td:first-child::after{
+  content:'✓' !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:17px !important;
+  height:17px !important;
+  margin-inline-start:6px !important;
+  border-radius:50% !important;
+  background:#0878bd !important;
+  color:#fff !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  vertical-align:middle !important;
+}
+</style>
+</body>
 
 <style id="index31-size-motion-absolute-final">
 /* حركة المقاسات النهائية: لا تعتمد على لون الخلفية */
@@ -11730,5 +11812,174 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
   #productModal .product-modal-image-badges .free-delivery-message i{
     font-size:10px !important;
   }
+}
+</style>
+
+
+<style id="index32-detail-message-final-small">
+/* رسائل تفاصيل المنتج: خط أصغر وبدون أي نبض */
+#productModal .product-modal-image-badges .discount-message,
+#productModal .product-modal-image-badges .free-delivery-message{
+  font-size:8px !important;
+  min-height:25px !important;
+  padding:4px 8px !important;
+  animation:none !important;
+  transform:none !important;
+  box-shadow:0 2px 8px rgba(0,0,0,.05) !important;
+}
+#productModal .product-modal-image-badges .discount-message i,
+#productModal .product-modal-image-badges .free-delivery-message i{
+  font-size:10px !important;
+}
+@media(max-width:600px){
+  #productModal .product-modal-image-badges .discount-message,
+  #productModal .product-modal-image-badges .free-delivery-message{
+    font-size:7px !important;
+    min-height:23px !important;
+    padding:4px 7px !important;
+  }
+  #productModal .product-modal-image-badges .discount-message i,
+  #productModal .product-modal-image-badges .free-delivery-message i{
+    font-size:9px !important;
+  }
+}
+</style>
+<script id="index32-size-click-scroll-100">
+(function(){
+  function scrollModalToBottom100(){
+    const modal=document.getElementById('productModal');
+    const body=modal ? modal.querySelector('.product-modal-body') : null;
+    if(!body) return;
+    requestAnimationFrame(function(){
+      setTimeout(function(){
+        body.scrollTo({top:body.scrollHeight, behavior:'smooth'});
+      },80);
+    });
+  }
+  function bind(){
+    const age=document.getElementById('ageOptions');
+    if(!age || age.dataset.scroll100Bound) return;
+    age.dataset.scroll100Bound='1';
+    age.addEventListener('click',function(e){
+      const btn=e.target.closest('.size-option-small');
+      if(!btn) return;
+      setTimeout(function(){
+        if(age.querySelector('.size-option-small.selected')) scrollModalToBottom100();
+      },100);
+    });
+  }
+  function init(){
+    bind();
+    const modal=document.getElementById('productModal');
+    if(modal){
+      new MutationObserver(bind).observe(modal,{childList:true,subtree:true});
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+
+<style id="index32-final-request-v2">
+/* الرسائل في تفاصيل المنتج: تصغير بسيط للخط وإلغاء أي نبض نهائياً */
+#productModal .product-modal-image-badges .discount-message,
+#productModal .product-modal-image-badges .free-delivery-message{
+  font-size:8.5px !important;
+  animation:none !important;
+  transform:none !important;
+}
+#productModal .product-modal-image-badges .discount-message i,
+#productModal .product-modal-image-badges .free-delivery-message i{
+  font-size:11px !important;
+}
+
+/* المرحلة 2: حقل اختيار الولاية يهتز حتى يتم اختيار ولاية */
+#page2 #wilaya.smart-wilaya-pulse{
+  animation:index32WilayaAttention .78s ease-in-out infinite !important;
+  transform-origin:center !important;
+  will-change:transform,box-shadow !important;
+}
+@keyframes index32WilayaAttention{
+  0%,100%{transform:translateX(0) scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.18)}
+  20%{transform:translateX(-2px) scale(1.012)}
+  40%{transform:translateX(2px) scale(1.018)}
+  60%{transform:translateX(-2px) scale(1.012)}
+  80%{transform:translateX(2px) scale(1.018)}
+  50%{box-shadow:0 0 0 4px rgba(0,0,0,.08),0 5px 14px rgba(0,0,0,.14)}
+}
+
+/* المرحلة 3: خيارات نوع التوصيل تهتز حتى يختار الزبون واحداً منها */
+#page2 .smart-delivery-option.smart-delivery-pulse{
+  animation:index32DeliveryAttention .78s ease-in-out infinite !important;
+  transform-origin:center !important;
+  will-change:transform,box-shadow !important;
+}
+@keyframes index32DeliveryAttention{
+  0%,100%{transform:translateX(0) scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.16)}
+  20%{transform:translateX(-2px) scale(1.012)}
+  40%{transform:translateX(2px) scale(1.018)}
+  60%{transform:translateX(-2px) scale(1.012)}
+  80%{transform:translateX(2px) scale(1.018)}
+  50%{box-shadow:0 0 0 4px rgba(0,0,0,.07),0 5px 14px rgba(0,0,0,.13)}
+}
+
+/* لا حركة بعد الاختيار */
+#page2 #wilaya:not(.smart-wilaya-pulse),
+#page2 .smart-delivery-option:not(.smart-delivery-pulse){
+  animation:none !important;
+}
+</style>
+
+<style id="index32-final-attention-fix">
+/* FINAL FIX: keep the requested attention effects active.
+   The previous compact checkout layer disabled these classes; this block intentionally wins. */
+
+/* الولاية: وميض واهتزاز صغير فقط قبل الاختيار */
+#page2 #wilaya.smart-wilaya-pulse{
+  animation:index32WilayaSmallAttention .95s ease-in-out infinite !important;
+  transform-origin:center !important;
+  will-change:transform,box-shadow !important;
+}
+@keyframes index32WilayaSmallAttention{
+  0%,100%{transform:translateX(0) scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.12)}
+  25%{transform:translateX(-1px) scale(1.008);box-shadow:0 0 0 2px rgba(0,0,0,.06)}
+  50%{transform:translateX(1px) scale(1.012);box-shadow:0 0 0 3px rgba(0,0,0,.08)}
+  75%{transform:translateX(-1px) scale(1.008);box-shadow:0 0 0 2px rgba(0,0,0,.06)}
+}
+
+/* نوع التوصيل: حركة صغيرة لفت الانتباه قبل اختيار أحد الخيارات */
+#page2 .smart-delivery-option.smart-delivery-pulse{
+  animation:index32DeliverySmallAttention .95s ease-in-out infinite !important;
+  transform-origin:center !important;
+  will-change:transform,box-shadow !important;
+}
+@keyframes index32DeliverySmallAttention{
+  0%,100%{transform:translateX(0) scale(1);box-shadow:0 0 0 0 rgba(0,0,0,.10)}
+  25%{transform:translateX(-1px) scale(1.008);box-shadow:0 0 0 2px rgba(0,0,0,.05)}
+  50%{transform:translateX(1px) scale(1.012);box-shadow:0 0 0 3px rgba(0,0,0,.07)}
+  75%{transform:translateX(-1px) scale(1.008);box-shadow:0 0 0 2px rgba(0,0,0,.05)}
+}
+
+/* عند الاختيار: لا حركة */
+#page2 #wilaya:not(.smart-wilaya-pulse),
+#page2 .smart-delivery-option:not(.smart-delivery-pulse){
+  animation:none !important;
+  transform:none !important;
+}
+
+/* تفاصيل المنتج: تصغير خط الرسائل 15% إضافية */
+#productModal #discountMessage,
+#productModal #freeDeliveryMessage{
+  font-size:8.5px !important;
+}
+#productModal #discountMessage span,
+#productModal #freeDeliveryMessage span,
+#productModal #discountText,
+#productModal #freeDeliveryText{
+  font-size:8.5px !important;
+  line-height:1.3 !important;
+}
+#productModal #discountMessage i,
+#productModal #freeDeliveryMessage i{
+  font-size:8.5px !important;
 }
 </style>
