@@ -499,8 +499,7 @@ const STORE_CONFIG = {
       1765137505304,
       1765145035052,
       1765145814607,
-      1789476986031,
-      1789581423689
+      1789476986031
     ]
   },
   "DISCOUNTS": {
@@ -509,7 +508,7 @@ const STORE_CONFIG = {
     "discountPerItem": 0,
     "discountScope": "selected",
     "discountProducts": [],
-    "enablePromotionalDiscount": true,
+    "enablePromotionalDiscount": false,
     "promotionalDiscountPercent": 10,
     "promotionalDiscountedPrice": null,
     "promoDiscountScope": "all",
