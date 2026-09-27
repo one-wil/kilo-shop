@@ -5535,6 +5535,7 @@
                         <span class="modern-gallery-badge"><i class="fas fa-images"></i> صور المنتج</span>
                         <button type="button" class="modern-gallery-zoom" onclick="event.stopPropagation();toggleProductZoom()"><i class="fas fa-expand"></i></button>
                         <img id="productModalImage" class="product-modal-image" src="" alt="">
+                        <div id="productModalImageBadges" class="product-modal-image-badges" aria-live="polite"></div>
                     </div>
                     <div class="modern-thumbs" id="modernProductThumbs"></div>
                     <div class="modern-gallery-caption" id="modernGalleryCaption">اضغط على الصورة للتكبير</div>
@@ -7173,6 +7174,20 @@
                 freeDeliveryMessage.classList.remove('fast-pulse');
             }
             
+            // شعارات تفاصيل المنتج: داخل أسفل إطار الصورة الكبيرة فقط.
+            const imageBadges = document.getElementById('productModalImageBadges');
+            if (imageBadges) {
+                const promoEnabled = !!(hasPromoDiscount && STORE_CONFIG.DISCOUNTS && STORE_CONFIG.DISCOUNTS.enablePromotionalDiscount);
+                const deliveryEnabled = !!(isFreeDeliveryProduct && STORE_CONFIG.FREE_DELIVERY &&
+                    (STORE_CONFIG.FREE_DELIVERY.desk?.enabled || STORE_CONFIG.FREE_DELIVERY.home?.enabled));
+                const promoPercent = STORE_CONFIG.DISCOUNTS?.promotionalDiscountPercent || 0;
+                imageBadges.innerHTML = `
+                    ${promoEnabled ? `<span class="product-modal-image-badge product-modal-promo-badge"><i class="fas fa-percentage"></i><span>خصم ترويجي ${promoPercent}%</span></span>` : ''}
+                    ${deliveryEnabled ? `<span class="product-modal-image-badge product-modal-delivery-badge"><i class="fas fa-truck-fast"></i><span>توصيل مجاني</span></span>` : ''}
+                `;
+                imageBadges.style.display = (promoEnabled || deliveryEnabled) ? 'flex' : 'none';
+            }
+
             const measurementsTableContainer = document.getElementById('measurementsTableContainer');
             const measurementsTableBody = document.getElementById('measurementsTableBody');
             const sizeOptionsContainer = document.getElementById('sizeOptionsContainer');
@@ -11264,6 +11279,35 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
 @media(max-width:480px){
   .premium-product-media .premium-product-badges{left:6px !important;right:6px !important;bottom:7px !important;gap:4px !important}
   .premium-product-media .premium-badge{min-height:25px !important;padding:5px 7px !important;font-size:.50rem !important}
+}
+</style>
+
+<style id="index32-detail-image-badges">
+/* شعارات الخصم والتوصيل داخل الصورة الكبيرة في تفاصيل المنتج */
+#productModal .modern-gallery-main{position:relative !important;}
+#productModal .product-modal-image-badges{
+  position:absolute !important;
+  left:10px !important; right:10px !important; bottom:10px !important;
+  z-index:20 !important; display:flex; align-items:center; justify-content:center;
+  gap:7px; flex-wrap:wrap; pointer-events:none;
+}
+#productModal .product-modal-image-badge{
+  display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  min-height:30px; padding:6px 10px; border-radius:999px;
+  color:#fff !important; font-weight:900; font-size:11px; line-height:1;
+  box-shadow:0 4px 14px rgba(0,0,0,.24); backdrop-filter:blur(4px);
+  animation:index32DetailBadgePulse 1.15s ease-in-out infinite;
+}
+#productModal .product-modal-promo-badge{background:rgba(180,35,35,.94) !important;}
+#productModal .product-modal-delivery-badge{background:rgba(18,126,76,.94) !important; animation-delay:.15s;}
+#productModal .product-modal-image-badge i{font-size:12px;}
+@keyframes index32DetailBadgePulse{
+  0%,100%{transform:scale(1);box-shadow:0 4px 14px rgba(0,0,0,.22)}
+  50%{transform:scale(1.075);box-shadow:0 0 0 5px rgba(255,255,255,.18),0 7px 20px rgba(0,0,0,.30)}
+}
+@media(max-width:600px){
+ #productModal .product-modal-image-badges{left:7px !important;right:7px !important;bottom:7px !important;gap:5px;}
+ #productModal .product-modal-image-badge{min-height:27px;padding:5px 8px;font-size:9px;}
 }
 </style>
 </body>
