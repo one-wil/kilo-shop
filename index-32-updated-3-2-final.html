@@ -5340,8 +5340,8 @@
 </style>
 
 
-<style id="index32-intro-three-times-final">
-/* تكبير نصّي حقيقي لـ «إتمام الطلب» و«أكمل طلبك» أثناء النبض فقط */
+<style id="index32-intro-double-hearts-final">
+/* «إتمام الطلب» و«أكمل طلبك»: تكبير ضعفين فقط أثناء النبض */
 #page2 #smartCheckoutIntro.smart-intro-black-pulse{
   animation:none !important;
   transform:none !important;
@@ -5352,18 +5352,40 @@
   display:inline-block !important;
   transform-origin:center center !important;
   will-change:transform !important;
-  animation:index32IntroTextTriplePulse .72s ease-in-out infinite !important;
+  animation:index32IntroTextDoublePulse .72s ease-in-out infinite !important;
+  position:relative;
+  z-index:3;
 }
-#page2 #smartCheckoutIntro.smart-intro-black-pulse .smart-kicker{
-  animation-delay:0s !important;
-}
-#page2 #smartCheckoutIntro.smart-intro-black-pulse h1{
-  animation-delay:0s !important;
-}
-@keyframes index32IntroTextTriplePulse{
+@keyframes index32IntroTextDoublePulse{
   0%,100%{transform:scale(1);}
-  50%{transform:scale(3);}
+  50%{transform:scale(2);}
 }
+/* قلوب تخرج من النصين أثناء النبض */
+#page2 #smartCheckoutIntro.smart-intro-black-pulse::after{
+  content:'♥  💙  ❤  ♥';
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%) scale(.2);
+  font-size:17px;
+  letter-spacing:6px;
+  white-space:nowrap;
+  pointer-events:none;
+  z-index:2;
+  opacity:0;
+  animation:index32IntroHeartsOut 1.44s ease-out infinite;
+}
+@keyframes index32IntroHeartsOut{
+  0%{transform:translate(-50%,-50%) scale(.2);opacity:0;}
+  10%{opacity:1;}
+  45%{transform:translate(-50%,-115%) scale(.75);opacity:.95;}
+  100%{transform:translate(-50%,-220%) scale(1.25);opacity:0;}
+}
+</style>
+<style id="index32-intro-double-hearts-authoritative">
+#page2 #smartCheckoutIntro.smart-intro-black-pulse{animation:none !important;transform:none !important;filter:none !important;}
+#page2 #smartCheckoutIntro.smart-intro-black-pulse .smart-kicker,#page2 #smartCheckoutIntro.smart-intro-black-pulse h1{animation:index32IntroTextDoublePulse .72s ease-in-out infinite !important;transform-origin:center center !important;display:inline-block !important;}
+#page2 #smartCheckoutIntro.smart-intro-black-pulse::after{animation:index32IntroHeartsOut 1.44s ease-out infinite !important;}
 </style>
 </head>
 <body>
