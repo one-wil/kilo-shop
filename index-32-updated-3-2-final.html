@@ -5861,6 +5861,10 @@
                 
                 setTimeout(() => {
                     createExplosionAtCart(cartCenterX, cartCenterY);
+                    // تشغيل صوت آلة تسجيل النقود بالضبط مع انفجار الرقم عند السلة.
+                    if (typeof window.playCashRegisterSound === 'function') {
+                        window.playCashRegisterSound();
+                    }
                     
                     cartElement.classList.add('cart-shake');
                     
@@ -8431,11 +8435,6 @@ updateDeliveryCost();
             
             setTimeout(() => {
                 addSelectedVariantsToCart(quantity, event);
-
-                // صوت آلة استقبال النقود لحظة وصول الرقم إلى السلة/انفجار الإضافة.
-                if (typeof window.playCashRegisterSound === 'function') {
-                    window.playCashRegisterSound();
-                }
 
                 closeProductModal();
                 setTimeout(() => {
@@ -11552,53 +11551,42 @@ let tries=0; const timer=setInterval(()=>{tries++;if(install()||tries>=40)clearI
     try{
       const AC = window.AudioContext || window.webkitAudioContext;
       if(!AC) return;
-
       const ctx = window.__cashRegisterAudioContext || new AC();
       window.__cashRegisterAudioContext = ctx;
 
       const start = () => {
         const now = ctx.currentTime;
-
-        // Short mechanical "ka-ching" style: two bright clicks + a metallic chime.
+        // صوت أعلى وأكثر وضوحاً يشبه "كا-تشينغ" الحقيقي عند وصول الرقم للسلة.
         const notes = [
-          {f: 880,  t:0.00, d:0.055, v:0.16},
-          {f: 1174.66,t:0.055,d:0.075,v:0.14},
-          {f: 1760,t:0.115,d:0.24,v:0.12}
+          {f: 520,  t:0.00, d:0.07, v:0.30},
+          {f: 880,  t:0.045,d:0.10, v:0.27},
+          {f: 1320, t:0.10, d:0.12, v:0.24},
+          {f: 1760, t:0.16, d:0.34, v:0.22},
+          {f: 2349, t:0.22, d:0.28, v:0.12}
         ];
-
         notes.forEach(n=>{
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(n.f, now + n.t);
-          gain.gain.setValueAtTime(0.0001, now + n.t);
-          gain.gain.exponentialRampToValueAtTime(n.v, now + n.t + 0.008);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + n.t + n.d);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + n.t);
-          osc.stop(now + n.t + n.d + 0.02);
+          const osc=ctx.createOscillator(), gain=ctx.createGain();
+          osc.type='triangle';
+          osc.frequency.setValueAtTime(n.f,now+n.t);
+          gain.gain.setValueAtTime(0.0001,now+n.t);
+          gain.gain.exponentialRampToValueAtTime(n.v,now+n.t+0.006);
+          gain.gain.exponentialRampToValueAtTime(0.0001,now+n.t+n.d);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now+n.t); osc.stop(now+n.t+n.d+0.03);
         });
 
-        // Very short low mechanical click to imitate the cash-register action.
-        const click = ctx.createOscillator();
-        const clickGain = ctx.createGain();
-        click.type = 'square';
-        click.frequency.setValueAtTime(180, now);
-        click.frequency.exponentialRampToValueAtTime(75, now + 0.045);
-        clickGain.gain.setValueAtTime(0.10, now);
-        clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
-        click.connect(clickGain);
-        clickGain.connect(ctx.destination);
-        click.start(now);
-        click.stop(now + 0.055);
+        // ضربة ميكانيكية قصيرة مثل نقرة آلة تسجيل النقود.
+        const click=ctx.createOscillator(), cg=ctx.createGain();
+        click.type='square';
+        click.frequency.setValueAtTime(210,now);
+        click.frequency.exponentialRampToValueAtTime(55,now+0.055);
+        cg.gain.setValueAtTime(0.22,now);
+        cg.gain.exponentialRampToValueAtTime(0.0001,now+0.065);
+        click.connect(cg); cg.connect(ctx.destination);
+        click.start(now); click.stop(now+0.07);
       };
-
-      if(ctx.state === 'suspended'){
-        ctx.resume().then(start).catch(()=>{});
-      }else{
-        start();
-      }
+      if(ctx.state==='suspended') ctx.resume().then(start).catch(()=>{});
+      else start();
     }catch(e){}
   };
 })();
