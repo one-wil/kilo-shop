@@ -5339,6 +5339,19 @@
 }
 </style>
 
+
+<style id="index32-intro-three-times-final">
+/* عند نبض «إتمام الطلب / أكمل طلبك»: تكبير 3 أضعاف ثم العودة للحجم الطبيعي */
+#page2 #smartCheckoutIntro.smart-intro-black-pulse{
+  animation:index32IntroTriplePulse .72s ease-in-out infinite !important;
+  transform-origin:center center !important;
+  will-change:transform,filter !important;
+}
+@keyframes index32IntroTriplePulse{
+  0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(0,0,0,0));}
+  50%{transform:scale(3);filter:drop-shadow(0 0 18px rgba(0,0,0,.38));}
+}
+</style>
 </head>
 <body>
     <!-- Flying Hearts Container -->
