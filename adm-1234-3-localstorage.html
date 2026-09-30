@@ -8644,37 +8644,51 @@ async function allArchive(){
  return all;
 }
 async function checkout(){
- const [analytics,orders]=await Promise.all([
-  post('/api/admin/checkout-analytics',{filters:{dateFrom:'',dateTo:''}},'تحليل Checkout'),
-  allCurrentOrders()
- ]);
- return {analytics,orders};
+  const analytics=await post('/api/admin/checkout-analytics',{filters:{dateFrom:'',dateTo:''}},'تحليل Checkout');
+  const orders=await allCurrentOrders();
+  return {analytics,orders};
 }
 async function saveSnapshot(showMessage){
  if(window.__smDataHubState.loading)return;
  window.__smDataHubState.loading=true;
  const previous=read(KEYS.orders,null);
  const hadPrevious=Array.isArray(previous);
+ const results={orders:null,archive:null,checkout:null};
+ const errors=[];
  try{
-  const [orders,archive,co]=await Promise.all([allCurrentOrders(),allArchive(),checkout()]);
-  if(hadPrevious){
-    const oldIds=new Set(previous.map(o=>String(o.orderId||o.id||'')).filter(Boolean));
-    const fresh=orders.filter(o=>{const id=String(o.orderId||o.id||'');return id&&!oldIds.has(id)});
-    if(fresh.length){
-      window.showNotification?.(`لديك ${fresh.length} طلب جديد`, 'warning');
+  const [ro,ra,rc]=await Promise.allSettled([allCurrentOrders(),allArchive(),checkout()]);
+  if(ro.status==='fulfilled'){results.orders=ro.value;}else{errors.push('الطلبات: '+(ro.reason?.message||ro.reason||'فشل التحميل'));}
+  if(ra.status==='fulfilled'){results.archive=ra.value;}else{errors.push('الأرشيف: '+(ra.reason?.message||ra.reason||'فشل التحميل'));}
+  if(rc.status==='fulfilled'){results.checkout=rc.value;}else{errors.push('Checkout: '+(rc.reason?.message||rc.reason||'فشل التحميل'));}
+
+  if(results.orders){
+    if(hadPrevious){
+      const oldIds=new Set(previous.map(o=>String(o.orderId||o.id||'')).filter(Boolean));
+      const fresh=results.orders.filter(o=>{const id=String(o.orderId||o.id||'');return id&&!oldIds.has(id)});
+      if(fresh.length) window.showNotification?.(`لديك ${fresh.length} طلب جديد`, 'warning');
     }
+    write(KEYS.orders,results.orders);
+    window.__smApplyOrdersLocal?.(results.orders);
   }
-  write(KEYS.orders,orders);
-  write(KEYS.archive,archive);
-  write(KEYS.checkout,{analytics:co.analytics,orders:co.orders});
-  window.__smApplyOrdersLocal?.(orders);
-  window.__smApplyArchiveLocal?.(archive);
-  window.__smApplyCheckoutLocal?.(co.analytics,co.orders);
-  if(showMessage)window.showNotification?.('تم تحديث البيانات من المصدر بنجاح','success');
+  if(results.archive){
+    write(KEYS.archive,results.archive);
+    window.__smApplyArchiveLocal?.(results.archive);
+  }
+  if(results.checkout){
+    write(KEYS.checkout,{analytics:results.checkout.analytics,orders:results.checkout.orders});
+    window.__smApplyCheckoutLocal?.(results.checkout.analytics,results.checkout.orders);
+  }
+
+  if(errors.length){
+    console.warn('StoreMaster Data Hub partial sync:',errors);
+    if(showMessage) window.showNotification?.('تم تحديث المتاح، مع تعذر: '+errors.join(' | '),'warning');
+    else window.showNotification?.('تعذر تحديث بعض البيانات من المصدر؛ تم الاحتفاظ بآخر نسخة محفوظة محلياً.','warning');
+  }else if(showMessage){
+    window.showNotification?.('تم تحديث البيانات من المصدر بنجاح','success');
+  }
  }catch(e){
   console.error('StoreMaster Data Hub:',e);
-  if(showMessage)window.showNotification?.(e.message||'تعذر تحديث البيانات من المصدر','error');
-  else window.showNotification?.('تعذر تحميل البيانات من المصدر؛ سيتم استعمال آخر نسخة محفوظة محلياً.','warning');
+  window.showNotification?.(e.message||'تعذر تحديث البيانات من المصدر؛ سيتم استعمال آخر نسخة محفوظة محلياً.','warning');
  }finally{window.__smDataHubState.loading=false}
 }
 
@@ -8744,13 +8758,42 @@ window.__smRefreshArchive=async function(){
 window.__smRefreshCheckout=async function(){
  if(window.__smDataHubState.loading)return;
  const btn=document.getElementById('caSourceRefreshBtn');
- const old=btn?.innerHTML||'';if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';}
+ const old=btn?.innerHTML||'';
+ if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';}
+ window.__smDataHubState.loading=true;
  try{
-  const {analytics,orders}=await checkout();write(KEYS.checkout,{analytics,orders});
-  window.__smApplyCheckoutLocal?.(analytics,orders);
-  window.showNotification?.('تم تحديث تحليل Checkout من المصدر','success');
- }catch(e){window.showNotification?.(e.message||'تعذر تحديث تحليل Checkout','error')}
- finally{if(btn){btn.disabled=false;btn.innerHTML=old||'<i class="fas fa-sync-alt"></i> تحديث من المصدر';}}
+   // Checkout يتحدّث من المصدر فقط هنا: تحليل Checkout + الطلبات.
+   // لا نعتمد على لقطة المزامنة العامة حتى لا يفشل التحديث بسبب الأرشيف.
+   const [ra,ro]=await Promise.allSettled([
+     post('/api/admin/checkout-analytics',{filters:{dateFrom:'',dateTo:''}},'تحليل Checkout'),
+     allCurrentOrders()
+   ]);
+   const errors=[];
+   const analytics=ra.status==='fulfilled'?ra.value:null;
+   const orders=ro.status==='fulfilled'?ro.value:null;
+   if(ra.status!=='fulfilled')errors.push(ra.reason?.message||'تعذر تحميل تحليل Checkout');
+   if(ro.status!=='fulfilled')errors.push(ro.reason?.message||'تعذر تحميل الطلبات');
+   if(analytics){
+     const local=read(KEYS.checkout,null)||{};
+     write(KEYS.checkout,{analytics,orders:Array.isArray(orders)?orders:(Array.isArray(local.orders)?local.orders:[])});
+     window.__smCheckoutLocalAnalytics=analytics;
+     window.__smCheckoutLocalOrders=Array.isArray(orders)?orders:(Array.isArray(local.orders)?local.orders:[]);
+     window.__smApplyCheckoutLocal?.(analytics,window.__smCheckoutLocalOrders);
+   }else if(Array.isArray(orders)){
+     const local=read(KEYS.checkout,null)||{};
+     write(KEYS.checkout,{analytics:local.analytics||null,orders});
+     window.__smCheckoutLocalOrders=orders;
+     window.__smApplyCheckoutLocal?.(local.analytics||null,orders);
+   }
+   if(errors.length) throw new Error(errors.join(' | '));
+   window.showNotification?.('تم تحديث تحليل Checkout من المصدر','success');
+ }catch(e){
+   console.error('StoreMaster Checkout source refresh:',e);
+   window.showNotification?.('تعذر تحميل Checkout من المصدر: '+(e.message||e),'error');
+ }finally{
+   window.__smDataHubState.loading=false;
+   if(btn){btn.disabled=false;btn.innerHTML=old||'<i class="fas fa-sync-alt"></i> تحديث من المصدر';}
+ }
 };
 
 // استبدال أزرار التحديث بحيث تكون هي وحدها التي تطلب المصدر.
@@ -8975,13 +9018,22 @@ function caInLocalRange(row,from,to){
 function caSetButtonBusy(btn,busy){if(!btn)return; if(busy){if(!btn.dataset.oldHtml)btn.dataset.oldHtml=btn.innerHTML;btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';}else{btn.disabled=false;if(btn.dataset.oldHtml){btn.innerHTML=btn.dataset.oldHtml;delete btn.dataset.oldHtml;}}}
 window.filterCheckoutAnalyticsLocal=async function(){
  const btn=document.getElementById('caLocalFilterBtn');caSetButtonBusy(btn,true);
- try{await new Promise(r=>setTimeout(r,80));const a=window.__smCheckoutLocalAnalytics||lastAnalytics;const all=Array.isArray(window.__smCheckoutLocalOrders)?window.__smCheckoutLocalOrders:lastOrders;
-  if(!a){showNotification?.('لا توجد بيانات Checkout محفوظة محلياً بعد','warning');return;}
+ try{
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  const saved=read(KEYS.checkout,null);
+  const a=saved?.analytics||window.__smCheckoutLocalAnalytics||lastAnalytics;
+  const all=Array.isArray(saved?.orders)?saved.orders:(Array.isArray(window.__smCheckoutLocalOrders)?window.__smCheckoutLocalOrders:lastOrders);
+  if(!a){showNotification?.('لا توجد بيانات Checkout محفوظة محلياً؛ اضغط «تحديث من المصدر» أولاً','warning');return;}
   const fv=document.getElementById('caDateFrom')?.value||'',tv=document.getElementById('caDateTo')?.value||'';
+  if(fv&&tv&&fv>tv){showNotification?.('تاريخ البداية أكبر من تاريخ النهاية','warning');return;}
   const from=fv?new Date(fv+'T00:00:00'):null,to=tv?new Date(tv+'T23:59:59.999'):null;
-  const filtered=Array.isArray(all)?all.filter(o=>caInLocalRange(o,from,to)):[];
-  lastAnalytics=a;lastOrders=filtered;renderCheckout(a,filtered);renderFinance(filtered,a);set('caFinancialPeriod',fv||tv?(fv||'البداية')+' → '+(tv||'اليوم'):'الفترة المحفوظة محلياً');
-  showNotification?.('تم تطبيق الفلتر من localStorage','success');
+  const filtered=(fv||tv)?(Array.isArray(all)?all.filter(o=>caInLocalRange(o,from,to)):[]):(Array.isArray(all)?all:[]);
+  lastAnalytics=a;lastOrders=filtered;
+  renderCheckout(a,filtered);renderFinance(filtered,a);
+  set('caFinancialPeriod',fv||tv?(fv||'البداية')+' → '+(tv||'اليوم'):'الفترة المحفوظة محلياً');
+  const note=document.getElementById('caLocalFilterNote');
+  if(note)note.textContent=fv||tv?'الفلتر المحلي يطبّق التاريخ على مؤشرات الطلبات المالية؛ مؤشرات جلسات Checkout الإجمالية محفوظة كما وردت من المصدر.':'';
+  showNotification?.(`تم تطبيق الفلتر من localStorage — ${filtered.length} طلب`,'success');
  }finally{caSetButtonBusy(btn,false)}
 };
 window.clearCheckoutAnalyticsFilters=function(){['caDateFrom','caDateTo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});filterCheckoutAnalyticsLocal()}
