@@ -2654,7 +2654,7 @@ input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus, [cont
       <div class="ca-toolbar-left">
         <label>من <input id="caDateFrom" type="date"></label>
         <label>إلى <input id="caDateTo" type="date"></label>
-        <button id="caLocalFilterBtn" class="btn" type="button" onclick="filterCheckoutAnalyticsLocal()"><i class="fas fa-filter"></i> فلتر</button>
+        <button id="caLocalFilterBtn" class="btn" type="button" onclick="window.__smFilterCheckoutLocal?.()"><i class="fas fa-filter"></i> فلتر</button>
         <button id="caSourceRefreshBtn" class="btn btn-info" type="button" onclick="window.__smRefreshCheckout?.()"><i class="fas fa-sync-alt"></i> تحديث من المصدر</button>
         <button class="btn" onclick="clearCheckoutAnalyticsFilters()"><i class="fas fa-eraser"></i> مسح</button>
       </div>
@@ -2757,7 +2757,7 @@ input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus, [cont
                         </div>
                         <div class="orders-tools">
                             <button class="btn btn-success order-csv-btn" onclick="exportOrdersCsv()"><i class="fas fa-file-csv"></i> CSV</button>
-                            <button class="btn btn-info" onclick="loadOrders(true)"><i class="fas fa-sync-alt"></i> تحديث</button>
+                            <button id="ordersRefreshBtn" class="btn btn-info" type="button" onclick="window.__smRefreshOrders?.()"><i class="fas fa-sync-alt"></i> تحديث</button>
                         </div>
                     </div>
 
@@ -8739,13 +8739,26 @@ window.__smFilterCheckoutLocal=function(){return withSpinner('caLocalFilterBtn',
 })};
 
 // تحديث يدوي مستقل لكل تبويب
+let ordersRefreshBusy=false;
 window.__smRefreshOrders=async function(){
- if(window.__smDataHubState.loading)return;
+ if(ordersRefreshBusy)return;
+ ordersRefreshBusy=true;
+ const btn=document.getElementById('ordersRefreshBtn');
+ const old=btn?.innerHTML||'';
+ if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';}
  try{
-  const list=await allCurrentOrders();write(KEYS.orders,list);
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  const list=await allCurrentOrders();
+  write(KEYS.orders,list);
   window.__smApplyOrdersLocal?.(list);
   window.showNotification?.('تم تحديث الطلبات من المصدر','success');
- }catch(e){window.showNotification?.(e.message||'تعذر تحديث الطلبات','error')}
+ }catch(e){
+  console.error('StoreMaster Orders source refresh:',e);
+  window.showNotification?.(e.message||'تعذر تحديث الطلبات من المصدر','error');
+ }finally{
+  ordersRefreshBusy=false;
+  if(btn){btn.disabled=false;btn.innerHTML=old||'<i class="fas fa-sync-alt"></i> تحديث';}
+ }
 };
 window.__smRefreshArchive=async function(){
  if(window.__smDataHubState.loading)return;
@@ -8798,7 +8811,7 @@ window.__smRefreshCheckout=async function(){
 
 // استبدال أزرار التحديث بحيث تكون هي وحدها التي تطلب المصدر.
 document.addEventListener('DOMContentLoaded',function(){
- const b1=document.querySelector('#orders .orders-tools .btn-info');if(b1)b1.onclick=()=>window.__smRefreshOrders();
+ const b1=document.getElementById('ordersRefreshBtn');if(b1)b1.onclick=()=>window.__smRefreshOrders?.();
  const b2=document.querySelector('#archive .content-header .btn-info');if(b2)b2.onclick=()=>window.__smRefreshArchive();
  const b3=document.getElementById('caSourceRefreshBtn');if(b3)b3.onclick=()=>window.__smRefreshCheckout();
 });
@@ -9036,7 +9049,7 @@ window.filterCheckoutAnalyticsLocal=async function(){
   showNotification?.(`تم تطبيق الفلتر من localStorage — ${filtered.length} طلب`,'success');
  }finally{caSetButtonBusy(btn,false)}
 };
-window.clearCheckoutAnalyticsFilters=function(){['caDateFrom','caDateTo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});filterCheckoutAnalyticsLocal()}
+window.clearCheckoutAnalyticsFilters=function(){['caDateFrom','caDateTo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});window.__smFilterCheckoutLocal?.()}
 window.loadCheckoutAnalytics=async function(showMessage=false){
  const loading=document.getElementById('caLoading');
  if(window.__smLocalDataMode && !showMessage){
