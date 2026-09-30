@@ -2733,7 +2733,7 @@ input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus, [cont
     </div>
 
     <div class="ca-grid-2">
-      <div class="ca-panel"><div class="ca-panel-title"><b>Checkout غير المكتمل</b><span id="caAbandonedRate">0%</span></div><div class="ca-table-wrap"><table class="ca-mini-table ca-table"><thead><tr><th>الجلسة</th><th>آخر إجراء</th><th>المنتجات</th><th>الولاية</th><th>التوصيل</th><th>قيمة السلة</th><th>آخر حدث</th><th>التاريخ</th></tr></thead><tbody id="caAbandonedBody"><tr><td colspan="8" class="ca-empty">لا توجد بيانات.</td></tr></tbody></table></div></div>
+      <div class="ca-panel"><div class="ca-panel-title"><b>Checkout غير المكتمل</b><span id="caAbandonedRate">0%</span></div><div class="ca-table-wrap"><table class="ca-mini-table ca-table"><thead><tr><th>الجلسة</th><th>آخر إجراء</th><th>المنتجات</th><th>الولاية</th><th>التوصيل</th><th>قيمة السلة</th><th>آخر حدث</th><th style="position:relative;white-space:nowrap"><span>التاريخ</span> <button type="button" id="caSessionDateFilterBtn" onclick="caToggleSessionDateFilter(event)" style="border:0;background:transparent;cursor:pointer;padding:2px 5px;font-size:12px" title="فلترة التاريخ"><i class="fas fa-filter"></i></button><div id="caSessionDateFilter" style="display:none;position:absolute;z-index:50;right:4px;top:34px;width:260px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 8px 25px rgba(0,0,0,.16);padding:12px;text-align:right;color:#222"><div style="font-weight:700;margin-bottom:8px">فلتر التاريخ</div><div style="display:flex;gap:6px;margin-bottom:8px"><input id="caSessionDateFrom" type="date" style="width:50%;padding:6px"><input id="caSessionDateTo" type="date" style="width:50%;padding:6px"></div><div id="caSessionDateChecks" style="max-height:150px;overflow:auto;border-top:1px solid #eee;padding-top:7px"></div><div style="display:flex;gap:6px;margin-top:9px"><button type="button" onclick="caApplySessionDateFilter()" style="flex:1">تطبيق</button><button type="button" onclick="caClearSessionDateFilter()" style="flex:1">مسح</button></div></div></th></tr></thead><tbody id="caAbandonedBody"><tr><td colspan="8" class="ca-empty">لا توجد بيانات.</td></tr></tbody></table></div></div>
       <div class="ca-panel"><div class="ca-panel-title"><b>مؤشرات رأس المال</b><span>قراءة تشغيلية</span></div>
         <div class="ca-finance-list">
           <div class="ca-finance-row"><span>رأس المال في الطلبات قيد المتابعة</span><b id="caCapitalAtRisk">0 دج</b></div>
@@ -8996,10 +8996,81 @@ function renderCheckout(d,orders=[]){
 
  const ab=document.getElementById('caAbandonedBody');
  const abandonedItemsText=(items)=>{const a=Array.isArray(items)?items:[];if(!a.length)return 'غير متوفر';return a.slice(0,8).map(it=>{const name=String(it?.name||it?.productName||it?.title||'منتج').trim()||'منتج';const q=Math.max(1,Number(it?.quantity)||1);const size=String(it?.size||'').trim();const color=String(it?.color||'').trim();const meta=[size,color].filter(Boolean).join(' / ');return `${esc(name)} × ${q}${meta?` <small style="opacity:.72">(${esc(meta)})</small>`:''}`}).join('<br>')};
- if(ab)ab.innerHTML=(d.abandonedSessions||[]).map(x=>`<tr><td dir="ltr">${esc(x.sessionId)}</td><td>${esc(journeyFromStage(x.lastStage||x.lastEvent))}</td><td style="white-space:normal;min-width:180px;line-height:1.65">${abandonedItemsText(x.items)}</td><td>${esc(x.wilaya||'—')}</td><td>${esc(x.deliveryType||'—')}</td><td>${money(x.cartValue||x.total||0)}</td><td>${esc(journeyLabel({event:x.lastEvent,label:x.lastEvent}))}</td><td dir="ltr">${esc(x.lastAt||'—')}</td></tr>`).join('')||'<tr><td colspan="8" class="ca-empty">لا توجد جلسات غير مكتملة.</td></tr>';
+ if(ab)ab.innerHTML=(d.abandonedSessions||[]).map(x=>{const sd=caSessionDateKey(x.lastAt);return `<tr data-session-date="${esc(sd)}"><td dir="ltr">${esc(x.sessionId)}</td><td>${esc(journeyFromStage(x.lastStage||x.lastEvent))}</td><td style="white-space:normal;min-width:180px;line-height:1.65">${abandonedItemsText(x.items)}</td><td>${esc(x.wilaya||'—')}</td><td>${esc(x.deliveryType||'—')}</td><td>${money(x.cartValue||x.total||0)}</td><td>${esc(journeyLabel({event:x.lastEvent,label:x.lastEvent}))}</td><td dir="ltr">${esc(caSessionDateLabel(x.lastAt))}</td></tr>`}).join('')||'<tr><td colspan="8" class="ca-empty">لا توجد جلسات غير مكتملة.</td></tr>';
+ caBuildSessionDateFilter();
  renderMini('caWilayaTable',(d.byWilaya||[]).map(x=>({name:x.name,orders:x.purchases,revenue:0,pieces:0,conversionRate:x.conversionRate})), 'الولاية');
  renderMini('caDeliveryTable',(d.byDelivery||[]).map(x=>({name:x.name,orders:x.purchases,revenue:0,pieces:0,conversionRate:x.conversionRate})), 'طريقة التوصيل');
 }
+
+function caSessionDateKey(v){
+ const d=caLocalDateValue(v);
+ if(!d)return '';
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function caSessionDateLabel(v){
+ const k=caSessionDateKey(v); return k ? k.split('-').reverse().join('/') : '—';
+}
+function caToggleSessionDateFilter(e){
+ e?.stopPropagation();
+ const box=document.getElementById('caSessionDateFilter');
+ if(!box)return;
+ box.style.display=box.style.display==='none'?'block':'none';
+ if(box.style.display==='block')caBuildSessionDateFilter();
+}
+function caBuildSessionDateFilter(){
+ const body=document.getElementById('caAbandonedBody');
+ const host=document.getElementById('caSessionDateChecks');
+ if(!host||!body)return;
+ const dates=[...new Set([...body.querySelectorAll('tr[data-session-date]')].map(r=>r.dataset.sessionDate).filter(Boolean))].sort().reverse();
+ host.innerHTML=dates.length?`<label style="display:block;margin-bottom:6px"><input type="checkbox" id="caSessionDateAll" checked onchange="document.querySelectorAll('#caSessionDateChecks input[data-date]').forEach(x=>x.checked=this.checked)"> الكل</label>`+dates.map(d=>`<label style="display:block;padding:3px 0"><input type="checkbox" data-date="${d}" checked onchange="const a=[...document.querySelectorAll('#caSessionDateChecks input[data-date]')];document.getElementById('caSessionDateAll').checked=a.every(x=>x.checked)"> ${d.split('-').reverse().join('/')}</label>`).join(''):'<div style="opacity:.6">لا توجد تواريخ</div>';
+}
+let caSessionDateFilterState={from:'',to:'',selected:null};
+function caApplySessionDateFilter(){
+ const body=document.getElementById('caAbandonedBody');
+ const from=document.getElementById('caSessionDateFrom')?.value||'';
+ const to=document.getElementById('caSessionDateTo')?.value||'';
+ const checks=[...document.querySelectorAll('#caSessionDateChecks input[data-date]')];
+ const selected=new Set(checks.filter(x=>x.checked).map(x=>x.dataset.date));
+ if(from&&to&&from>to){showNotification?.('تاريخ البداية أكبر من تاريخ النهاية','warning');return;}
+ caSessionDateFilterState={from,to,selected:new Set(selected)};
+ const rows=[...(body?.querySelectorAll('tr[data-session-date]')||[])];
+ rows.forEach(row=>{
+   const d=String(row.dataset.sessionDate||'');
+   const inRange=(!from||d>=from)&&(!to||d<=to);
+   const hasDateChoices=checks.length>0;
+   const dateSelected=!hasDateChoices||selected.has(d);
+   row.style.display=(inRange&&dateSelected)?'':'none';
+ });
+ const visible=rows.filter(r=>r.style.display!=='none').length;
+ const empty=body?.querySelector('tr.ca-session-filter-empty');
+ if(empty)empty.remove();
+ if(body&&visible===0){
+   body.insertAdjacentHTML('beforeend','<tr class="ca-session-filter-empty"><td colspan="8" class="ca-empty">لا توجد جلسات ضمن التاريخ المحدد.</td></tr>');
+ }
+ const kpi=document.getElementById('caAbandoned');
+ if(kpi)kpi.textContent=num(visible);
+ const rate=document.getElementById('caAbandonedRate');
+ const totalSessions=Number(lastAnalytics?.summary?.sessions||0);
+ if(rate)rate.textContent='معدل غير المكتمل: '+(totalSessions?Math.round(visible/totalSessions*1000)/10:0)+'%';
+ const btn=document.getElementById('caSessionDateFilterBtn');
+ if(btn)btn.style.opacity=(from||to||selected.size<checks.length)?'1':'.65';
+ const box=document.getElementById('caSessionDateFilter');
+ if(box)box.style.display='none';
+ showNotification?.(`تم فلترة جلسات Checkout حسب التاريخ — ${visible} جلسة`,'success');
+}
+function caClearSessionDateFilter(){
+ caSessionDateFilterState={from:'',to:'',selected:null};
+ const f=document.getElementById('caSessionDateFrom'),t=document.getElementById('caSessionDateTo');if(f)f.value='';if(t)t.value='';
+ document.querySelectorAll('#caSessionDateChecks input[data-date]').forEach(x=>x.checked=true);
+ const all=document.getElementById('caSessionDateAll');if(all)all.checked=true;
+ document.querySelectorAll('#caAbandonedBody tr[data-session-date]').forEach(r=>r.style.display='');
+ document.querySelectorAll('#caAbandonedBody tr.ca-session-filter-empty').forEach(r=>r.remove());
+ const total=Array.isArray(lastAnalytics?.abandonedSessions)?lastAnalytics.abandonedSessions.length:document.querySelectorAll('#caAbandonedBody tr[data-session-date]').length;
+ const kpi=document.getElementById('caAbandoned');if(kpi)kpi.textContent=num(total);
+ const rate=document.getElementById('caAbandonedRate');const totalSessions=Number(lastAnalytics?.summary?.sessions||0);if(rate)rate.textContent='معدل غير المكتمل: '+(totalSessions?Math.round(total/totalSessions*1000)/10:0)+'%';
+ document.getElementById('caSessionDateFilter').style.display='none';
+}
+document.addEventListener('click',function(e){const box=document.getElementById('caSessionDateFilter');const btn=document.getElementById('caSessionDateFilterBtn');if(box&&box.style.display==='block'&&!box.contains(e.target)&&e.target!==btn){box.style.display='none';}});
 
 function renderFinance(orders,d){
  const fin=buildFinance(orders),s=d.summary||{};
