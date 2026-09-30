@@ -2654,7 +2654,8 @@ input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus, [cont
       <div class="ca-toolbar-left">
         <label>من <input id="caDateFrom" type="date"></label>
         <label>إلى <input id="caDateTo" type="date"></label>
-        <button class="btn btn-info" onclick="loadCheckoutAnalytics(true)"><i class="fas fa-sync-alt"></i> تحديث التحليل</button>
+        <button id="caLocalFilterBtn" class="btn" type="button" onclick="filterCheckoutAnalyticsLocal()"><i class="fas fa-filter"></i> فلتر</button>
+        <button id="caSourceRefreshBtn" class="btn btn-info" type="button" onclick="window.__smRefreshCheckout?.()"><i class="fas fa-sync-alt"></i> تحديث من المصدر</button>
         <button class="btn" onclick="clearCheckoutAnalyticsFilters()"><i class="fas fa-eraser"></i> مسح</button>
       </div>
       <div class="ca-toolbar-right">
@@ -2667,6 +2668,7 @@ input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus, [cont
         </label>
       </div>
     </div>
+    <div id="caLocalFilterNote" style="font-size:11px;color:#a16207;padding:6px 12px"></div>
     <div id="caLoading" class="ca-loading"><i class="fas fa-spinner fa-spin"></i> جاري تجميع وتحليل بيانات Checkout والطلبات...</div>
 
     <div class="ca-kpi-grid">
@@ -8697,6 +8699,30 @@ window.__smDataHubBootstrap=function(){
 };
 window.__smRefreshDataFromSource=()=>saveSnapshot(true);
 window.__smDataHubKeys=KEYS;
+// Each action has its own spinner, and never starts the other action.
+async function withSpinner(id,work){
+ const b=document.getElementById(id);if(!b)return work();
+ if(b.disabled)return;
+ const original=b.innerHTML;b.disabled=true;b.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';
+ // Yield a frame to make the spinner visible before synchronous local calculations.
+ try{await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));return await work()}
+ finally{b.innerHTML=original;b.disabled=false}
+}
+function orderDate(o){const raw=String(o?.timestamp||o?.date||o?.createdAt||'');const v=Date.parse(raw);return Number.isFinite(v)?new Date(v).toISOString().slice(0,10):raw.match(/^(\d{4}-\d{2}-\d{2})/)?.[1]||''}
+window.__smFilterCheckoutLocal=function(){return withSpinner('caLocalFilterBtn',async()=>{
+ const co=read(KEYS.checkout,null);if(!co?.analytics){window.showNotification?.('لا توجد بيانات Checkout محفوظة محلياً؛ اضغط تحديث من المصدر أولاً','warning');return}
+ const from=document.getElementById('caDateFrom')?.value||'',to=document.getElementById('caDateTo')?.value||'';
+ if(from&&to&&from>to){window.showNotification?.('تاريخ البداية أكبر من تاريخ النهاية','warning');return}
+ const rows=Array.isArray(co.orders)?co.orders:[];
+ const filtered=rows.filter(o=>{const d=orderDate(o);return d&&(!from||d>=from)&&(!to||d<=to)});
+ const analytics=co.analytics;
+ // The backend returns pre-aggregated funnel totals, not dated raw sessions.
+ // Do not pretend those metrics have been date-filtered: filter order finance only.
+ window.__smApplyCheckoutLocal?.(analytics,from||to?filtered:rows);
+ const el=document.getElementById('caFinancialPeriod');if(el)el.textContent=from||to?(from||'البداية')+' → '+(to||'اليوم'):'الفترة المتاحة';
+ const note=document.getElementById('caLocalFilterNote');if(note)note.textContent=from||to?'الفلترة المحلية بالتاريخ تطبق على مؤشرات الطلبات المالية فقط؛ إحصاءات جلسات Checkout ومسار التحويل إجمالية من آخر نسخة محفوظة.':'';
+ window.showNotification?.('تم تطبيق الفلتر من localStorage دون الاتصال بالمصدر','success');
+})};
 
 // تحديث يدوي مستقل لكل تبويب
 window.__smRefreshOrders=async function(){
@@ -8717,18 +8743,21 @@ window.__smRefreshArchive=async function(){
 };
 window.__smRefreshCheckout=async function(){
  if(window.__smDataHubState.loading)return;
+ const btn=document.getElementById('caSourceRefreshBtn');
+ const old=btn?.innerHTML||'';if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';}
  try{
   const {analytics,orders}=await checkout();write(KEYS.checkout,{analytics,orders});
   window.__smApplyCheckoutLocal?.(analytics,orders);
   window.showNotification?.('تم تحديث تحليل Checkout من المصدر','success');
  }catch(e){window.showNotification?.(e.message||'تعذر تحديث تحليل Checkout','error')}
+ finally{if(btn){btn.disabled=false;btn.innerHTML=old||'<i class="fas fa-sync-alt"></i> تحديث من المصدر';}}
 };
 
 // استبدال أزرار التحديث بحيث تكون هي وحدها التي تطلب المصدر.
 document.addEventListener('DOMContentLoaded',function(){
  const b1=document.querySelector('#orders .orders-tools .btn-info');if(b1)b1.onclick=()=>window.__smRefreshOrders();
  const b2=document.querySelector('#archive .content-header .btn-info');if(b2)b2.onclick=()=>window.__smRefreshArchive();
- const b3=document.querySelector('#checkout-analytics .ca-toolbar .btn-info');if(b3)b3.onclick=()=>window.__smRefreshCheckout();
+ const b3=document.getElementById('caSourceRefreshBtn');if(b3)b3.onclick=()=>window.__smRefreshCheckout();
 });
 
 // initializeDashboard موجود قبل هذا السكربت؛ نبدأ Data Hub بعد إظهار اللوحة.
@@ -8938,7 +8967,24 @@ function renderFinance(orders,d){
 }
 
 window.renderCheckoutAnalyticsLast=function(){if(!lastAnalytics)return;const mode=document.getElementById('caViewMode')?.value||'all';document.querySelectorAll('#checkout-analytics .ca-grid-2,#checkout-analytics .ca-grid-3,#checkout-analytics .ca-status-grid').forEach(e=>e.style.display='');if(mode==='finance'){document.querySelector('#checkout-analytics .ca-grid-2:nth-of-type(1)')?.style.setProperty('display','grid')} }
-window.clearCheckoutAnalyticsFilters=function(){['caDateFrom','caDateTo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});loadCheckoutAnalytics()}
+function caLocalDateValue(v){const d=new Date(v);return Number.isNaN(d.getTime())?null:d}
+function caInLocalRange(row,from,to){
+ const raw=row?.timestamp||row?.date||row?.createdAt||row?.lastAt||row?.updatedAt||'';const d=caLocalDateValue(raw);
+ if(!d)return !from&&!to; if(from&&d<from)return false; if(to&&d>to)return false; return true;
+}
+function caSetButtonBusy(btn,busy){if(!btn)return; if(busy){if(!btn.dataset.oldHtml)btn.dataset.oldHtml=btn.innerHTML;btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';}else{btn.disabled=false;if(btn.dataset.oldHtml){btn.innerHTML=btn.dataset.oldHtml;delete btn.dataset.oldHtml;}}}
+window.filterCheckoutAnalyticsLocal=async function(){
+ const btn=document.getElementById('caLocalFilterBtn');caSetButtonBusy(btn,true);
+ try{await new Promise(r=>setTimeout(r,80));const a=window.__smCheckoutLocalAnalytics||lastAnalytics;const all=Array.isArray(window.__smCheckoutLocalOrders)?window.__smCheckoutLocalOrders:lastOrders;
+  if(!a){showNotification?.('لا توجد بيانات Checkout محفوظة محلياً بعد','warning');return;}
+  const fv=document.getElementById('caDateFrom')?.value||'',tv=document.getElementById('caDateTo')?.value||'';
+  const from=fv?new Date(fv+'T00:00:00'):null,to=tv?new Date(tv+'T23:59:59.999'):null;
+  const filtered=Array.isArray(all)?all.filter(o=>caInLocalRange(o,from,to)):[];
+  lastAnalytics=a;lastOrders=filtered;renderCheckout(a,filtered);renderFinance(filtered,a);set('caFinancialPeriod',fv||tv?(fv||'البداية')+' → '+(tv||'اليوم'):'الفترة المحفوظة محلياً');
+  showNotification?.('تم تطبيق الفلتر من localStorage','success');
+ }finally{caSetButtonBusy(btn,false)}
+};
+window.clearCheckoutAnalyticsFilters=function(){['caDateFrom','caDateTo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});filterCheckoutAnalyticsLocal()}
 window.loadCheckoutAnalytics=async function(showMessage=false){
  const loading=document.getElementById('caLoading');
  if(window.__smLocalDataMode && !showMessage){
