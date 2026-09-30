@@ -8722,20 +8722,31 @@ async function withSpinner(id,work){
  try{await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));return await work()}
  finally{b.innerHTML=original;b.disabled=false}
 }
-function orderDate(o){const raw=String(o?.timestamp||o?.date||o?.createdAt||'');const v=Date.parse(raw);return Number.isFinite(v)?new Date(v).toISOString().slice(0,10):raw.match(/^(\d{4}-\d{2}-\d{2})/)?.[1]||''}
+function orderDate(o){
+ const raw=String(o?.timestamp||o?.date||o?.createdAt||o?.lastAt||'').trim();
+ if(!raw)return '';
+ let m=raw.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+ if(m)return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+ m=raw.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
+ if(m)return `${m[3]}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+ const months={janvier:1,fevrier:2,février:2,mars:3,avril:4,mai:5,juin:6,juillet:7,aout:8,août:8,septembre:9,octobre:10,novembre:11,decembre:12,décembre:12};
+ m=raw.toLowerCase().match(/(\d{1,2})\s+([a-zàâçéèêëîïôûùüÿœ]+)\s+(\d{4})/i);
+ if(m){const mo=months[m[2]];if(mo)return `${m[3]}-${String(mo).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;}
+ const t=Date.parse(raw);return Number.isFinite(t)?new Date(t).toISOString().slice(0,10):'';
+}
 window.__smFilterCheckoutLocal=function(){return withSpinner('caLocalFilterBtn',async()=>{
- const co=read(KEYS.checkout,null);if(!co?.analytics){window.showNotification?.('لا توجد بيانات Checkout محفوظة محلياً؛ اضغط تحديث من المصدر أولاً','warning');return}
+ const co=read(KEYS.checkout,null);if(!co?.analytics){window.showNotification?.('لا توجد بيانات Checkout محفوظة محلياً؛ اضغط «تحديث من المصدر» أولاً','warning');return}
  const from=document.getElementById('caDateFrom')?.value||'',to=document.getElementById('caDateTo')?.value||'';
  if(from&&to&&from>to){window.showNotification?.('تاريخ البداية أكبر من تاريخ النهاية','warning');return}
  const rows=Array.isArray(co.orders)?co.orders:[];
- const filtered=rows.filter(o=>{const d=orderDate(o);return d&&(!from||d>=from)&&(!to||d<=to)});
- const analytics=co.analytics;
- // The backend returns pre-aggregated funnel totals, not dated raw sessions.
- // Do not pretend those metrics have been date-filtered: filter order finance only.
- window.__smApplyCheckoutLocal?.(analytics,from||to?filtered:rows);
- const el=document.getElementById('caFinancialPeriod');if(el)el.textContent=from||to?(from||'البداية')+' → '+(to||'اليوم'):'الفترة المتاحة';
- const note=document.getElementById('caLocalFilterNote');if(note)note.textContent=from||to?'الفلترة المحلية بالتاريخ تطبق على مؤشرات الطلبات المالية فقط؛ إحصاءات جلسات Checkout ومسار التحويل إجمالية من آخر نسخة محفوظة.':'';
- window.showNotification?.('تم تطبيق الفلتر من localStorage دون الاتصال بالمصدر','success');
+ const filtered=(from||to)?rows.filter(o=>{const d=orderDate(o);return !!d&&(!from||d>=from)&&(!to||d<=to)}):rows.slice();
+ const baseAnalytics=co.analytics||{};
+ const analytics={...baseAnalytics,summary:{...(baseAnalytics.summary||{})}};
+ if(from||to){analytics.summary.purchases=filtered.length;analytics.summary.sendStage=filtered.length;}
+ window.__smApplyCheckoutLocal?.(analytics,filtered);
+ const el=document.getElementById('caFinancialPeriod');if(el)el.textContent=from||to?(from||'البداية')+' → '+(to||'اليوم'):'الفترة المحفوظة محلياً';
+ const note=document.getElementById('caLocalFilterNote');if(note)note.textContent=from||to?`عرض بيانات الطلبات من localStorage للفترة المحددة فقط: ${filtered.length} طلب.`:'عرض جميع بيانات الطلبات المحفوظة محلياً.';
+ window.showNotification?.(`تم تطبيق الفترة المحددة محلياً — ${filtered.length} طلب`,'success');
 })};
 
 // تحديث يدوي مستقل لكل تبويب
