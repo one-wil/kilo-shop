@@ -9034,30 +9034,49 @@ function renderFinance(orders,d){
 }
 
 window.renderCheckoutAnalyticsLast=function(){if(!lastAnalytics)return;const mode=document.getElementById('caViewMode')?.value||'all';document.querySelectorAll('#checkout-analytics .ca-grid-2,#checkout-analytics .ca-grid-3,#checkout-analytics .ca-status-grid').forEach(e=>e.style.display='');if(mode==='finance'){document.querySelector('#checkout-analytics .ca-grid-2:nth-of-type(1)')?.style.setProperty('display','grid')} }
-function caLocalDateValue(v){const d=new Date(v);return Number.isNaN(d.getTime())?null:d}
-function caInLocalRange(row,from,to){
- const raw=row?.timestamp||row?.date||row?.createdAt||row?.lastAt||row?.updatedAt||'';const d=caLocalDateValue(raw);
- if(!d)return !from&&!to; if(from&&d<from)return false; if(to&&d>to)return false; return true;
+function caLocalDateValue(v){
+ const raw=String(v??'').trim();if(!raw)return null;
+ if(/^\d{4}-\d{2}-\d{2}$/.test(raw))return new Date(raw+'T00:00:00');
+ let m=raw.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);if(m)return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+ m=raw.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);if(m)return new Date(Number(m[3]),Number(m[2])-1,Number(m[1]));
+ const months={janvier:1,fevrier:2,février:2,mars:3,avril:4,mai:5,juin:6,juillet:7,aout:8,août:8,septembre:9,octobre:10,novembre:11,decembre:12,décembre:12};
+ m=raw.toLowerCase().match(/(\d{1,2})\s+([a-zàâçéèêëîïôûùüÿœ]+)\s+(\d{4})/i);if(m&&months[m[2]]){const tm=raw.match(/(?:à|at|,)\s*(\d{1,2})(?::(\d{2}))?(?::(\d{2}))?/i);return new Date(Number(m[3]),months[m[2]]-1,Number(m[1]),tm?Number(tm[1]):0,tm&&tm[2]?Number(tm[2]):0,tm&&tm[3]?Number(tm[3]):0)}
+ const d=new Date(raw);return Number.isNaN(d.getTime())?null:d;
 }
-function caSetButtonBusy(btn,busy){if(!btn)return; if(busy){if(!btn.dataset.oldHtml)btn.dataset.oldHtml=btn.innerHTML;btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';}else{btn.disabled=false;if(btn.dataset.oldHtml){btn.innerHTML=btn.dataset.oldHtml;delete btn.dataset.oldHtml;}}}
+function caEventInRange(row,from,to){const d=caLocalDateValue(row?.timestamp);if(!d)return false;if(from&&d<from)return false;if(to&&d>to)return false;return true}
+function caBuildLocalAnalytics(rawEvents){
+ const events=Array.isArray(rawEvents)?rawEvents:[];
+ const stageFor=(event,fallback)=>({product_view:1,begin_checkout:2,wilaya_selected:3,delivery_selected:4,details_started:5,checkout_submit_attempt:6,purchase:6,checkout_abandoned:Number(fallback||1)})[event]||Number(fallback||0);
+ const sessions={};
+ events.forEach(e=>{const id=String(e?.sessionId||'').trim();if(!id)return;const x={...e,stage:stageFor(e.event,e.stage)};if(!sessions[id])sessions[id]={events:[],home:false,product:false,begin:false,purchase:false,abandoned:false,lastStage:0,wilaya:'',deliveryType:'',total:0,items:[]};const a=sessions[id];a.events.push(x);if(x.event==='store_home_view')a.home=true;if(x.event==='product_view')a.product=true;if(x.event==='begin_checkout')a.begin=true;if(x.event==='purchase'){a.purchase=true;a.total=Number(x.total||a.total)}if(x.event==='checkout_abandoned')a.abandoned=true;if(x.stage)a.lastStage=Math.max(a.lastStage,x.stage);if(x.wilaya)a.wilaya=x.wilaya;if(x.deliveryType)a.deliveryType=x.deliveryType;if(Array.isArray(x.items)&&x.items.length)a.items=x.items});
+ const ids=Object.keys(sessions), productIds=ids.filter(id=>sessions[id].product), sessionCount=productIds.length;
+ const unique=(event,pool=productIds)=>pool.filter(id=>sessions[id].events.some(e=>e.event===event)).length;
+ const purchases=productIds.filter(id=>sessions[id].purchase).length, sendStage=unique('checkout_submit_attempt')+productIds.filter(id=>!sessions[id].events.some(e=>e.event==='checkout_submit_attempt')&&sessions[id].purchase).length;
+ const abandoned=productIds.filter(id=>!sessions[id].purchase).length, explicitAbandoned=productIds.filter(id=>sessions[id].abandoned&&!sessions[id].purchase).length;
+ const pct2=(a,b)=>b?Math.round(a/b*1000)/10:0;
+ const byWilaya={},byDelivery={};productIds.forEach(id=>{const a=sessions[id];if(a.wilaya){if(!byWilaya[a.wilaya])byWilaya[a.wilaya]={sessions:0,purchases:0};byWilaya[a.wilaya].sessions++;if(a.purchase)byWilaya[a.wilaya].purchases++}if(a.deliveryType){if(!byDelivery[a.deliveryType])byDelivery[a.deliveryType]={sessions:0,purchases:0};byDelivery[a.deliveryType].sessions++;if(a.purchase)byDelivery[a.deliveryType].purchases++}});
+ const abandonedSessions=productIds.filter(id=>!sessions[id].purchase).map(id=>{const a=sessions[id],last=a.events[a.events.length-1]||{};return{sessionId:id,lastStage:a.lastStage||last.stage||1,wilaya:a.wilaya||'',deliveryType:a.deliveryType||'',lastEvent:last.event||'',lastAt:last.timestamp||'',cartCount:Number(last.cartCount||0),cartValue:Number(last.cartValue||0),total:Number(last.total||a.total||0),items:a.items||last.items||[]}}).sort((a,b)=>String(b.lastAt).localeCompare(String(a.lastAt)));
+ const summary={visitors:ids.length,sessions:sessionCount,checkoutSessions:sessionCount,storeHomeViews:unique('store_home_view',ids),stage1:sessionCount,stage2:unique('begin_checkout'),stage3:unique('wilaya_selected'),stage4:unique('delivery_selected'),stage5:unique('details_started'),submitAttempts:unique('checkout_submit_attempt'),sendStage, purchases,conversionRate:pct2(purchases,sessionCount),abandoned,abandonedRate:pct2(abandoned,sessionCount),explicitAbandoned};
+ const funnel=[{stage:1,label:'عرض تفاصيل المنتج',sessions:summary.stage1,rate:pct2(summary.stage1,sessionCount)},{stage:2,label:'السلة / بدء Checkout',sessions:summary.stage2,rate:pct2(summary.stage2,sessionCount)},{stage:3,label:'اختيار الولاية',sessions:summary.stage3,rate:pct2(summary.stage3,sessionCount)},{stage:4,label:'طريقة التوصيل',sessions:summary.stage4,rate:pct2(summary.stage4,sessionCount)},{stage:5,label:'بيانات العميل',sessions:summary.stage5,rate:pct2(summary.stage5,sessionCount)},{stage:6,label:'إرسال الطلب',sessions:summary.sendStage,rate:pct2(summary.sendStage,sessionCount)}];
+ return{success:true,generatedAt:new Date().toISOString(),summary,funnel,byWilaya:Object.entries(byWilaya).map(([name,v])=>({name,...v,conversionRate:pct2(v.purchases,v.sessions)})).sort((a,b)=>b.sessions-a.sessions),byDelivery:Object.entries(byDelivery).map(([name,v])=>({name,...v,conversionRate:pct2(v.purchases,v.sessions)})).sort((a,b)=>b.sessions-a.sessions),abandonedSessions,events};
+}
+function caSetButtonBusy(btn,busy){if(!btn)return;if(busy){if(!btn.dataset.oldHtml)btn.dataset.oldHtml=btn.innerHTML;btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري التحميل...'}else{btn.disabled=false;if(btn.dataset.oldHtml){btn.innerHTML=btn.dataset.oldHtml;delete btn.dataset.oldHtml}}}
 window.filterCheckoutAnalyticsLocal=async function(){
  const btn=document.getElementById('caLocalFilterBtn');caSetButtonBusy(btn,true);
  try{
   await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-  const saved=read(KEYS.checkout,null);
-  const a=saved?.analytics||window.__smCheckoutLocalAnalytics||lastAnalytics;
-  const all=Array.isArray(saved?.orders)?saved.orders:(Array.isArray(window.__smCheckoutLocalOrders)?window.__smCheckoutLocalOrders:lastOrders);
-  if(!a){showNotification?.('لا توجد بيانات Checkout محفوظة محلياً؛ اضغط «تحديث من المصدر» أولاً','warning');return;}
-  const fv=document.getElementById('caDateFrom')?.value||'',tv=document.getElementById('caDateTo')?.value||'';
-  if(fv&&tv&&fv>tv){showNotification?.('تاريخ البداية أكبر من تاريخ النهاية','warning');return;}
+  const saved=read(KEYS.checkout,null);const a=saved?.analytics||window.__smCheckoutLocalAnalytics||lastAnalytics;const all=Array.isArray(saved?.orders)?saved.orders:(Array.isArray(window.__smCheckoutLocalOrders)?window.__smCheckoutLocalOrders:lastOrders);
+  if(!a){showNotification?.('لا توجد بيانات Checkout محفوظة محلياً؛ اضغط «تحديث من المصدر» أولاً','warning');return}
+  const fv=document.getElementById('caDateFrom')?.value||'',tv=document.getElementById('caDateTo')?.value||'';if(fv&&tv&&fv>tv){showNotification?.('تاريخ البداية أكبر من تاريخ النهاية','warning');return}
   const from=fv?new Date(fv+'T00:00:00'):null,to=tv?new Date(tv+'T23:59:59.999'):null;
-  const filtered=(fv||tv)?(Array.isArray(all)?all.filter(o=>caInLocalRange(o,from,to)):[]):(Array.isArray(all)?all:[]);
-  lastAnalytics=a;lastOrders=filtered;
-  renderCheckout(a,filtered);renderFinance(filtered,a);
+  const raw=Array.isArray(a.events)?a.events:[];
+  const filteredEvents=(fv||tv)?raw.filter(e=>caEventInRange(e,from,to)):raw.slice();
+  const filteredOrders=(fv||tv)?(Array.isArray(all)?all.filter(o=>{const d=caLocalDateValue(o?.timestamp||o?.date||o?.createdAt||o?.lastAt);return d&&(!from||d>=from)&&(!to||d<=to)}):[]):(Array.isArray(all)?all:[]);
+  const analytics=(fv||tv)?caBuildLocalAnalytics(filteredEvents):a;
+  lastAnalytics=analytics;lastOrders=filteredOrders;renderCheckout(analytics,filteredOrders);renderFinance(filteredOrders,analytics);
   set('caFinancialPeriod',fv||tv?(fv||'البداية')+' → '+(tv||'اليوم'):'الفترة المحفوظة محلياً');
-  const note=document.getElementById('caLocalFilterNote');
-  if(note)note.textContent=fv||tv?'الفلتر المحلي يطبّق التاريخ على مؤشرات الطلبات المالية؛ مؤشرات جلسات Checkout الإجمالية محفوظة كما وردت من المصدر.':'';
-  showNotification?.(`تم تطبيق الفلتر من localStorage — ${filtered.length} طلب`,'success');
+  const note=document.getElementById('caLocalFilterNote');if(note)note.textContent=fv||tv?`تم تطبيق التاريخ على جلسات Checkout والطلبات معاً: ${analytics.summary?.sessions||0} جلسة، ${filteredOrders.length} طلب.`:'';
+  showNotification?.(`تم تطبيق الفترة المحددة محلياً — ${analytics.summary?.sessions||0} جلسة · ${filteredOrders.length} طلب`,'success');
  }finally{caSetButtonBusy(btn,false)}
 };
 window.clearCheckoutAnalyticsFilters=function(){['caDateFrom','caDateTo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});window.__smFilterCheckoutLocal?.()}
