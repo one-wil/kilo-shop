@@ -8718,7 +8718,7 @@ window.__smRefreshArchive=async function(){
 window.__smRefreshCheckout=async function(){
  if(window.__smDataHubState.loading)return;
  try{
-  const [analytics,orders]=await checkout();write(KEYS.checkout,{analytics,orders});
+  const {analytics,orders}=await checkout();write(KEYS.checkout,{analytics,orders});
   window.__smApplyCheckoutLocal?.(analytics,orders);
   window.showNotification?.('تم تحديث تحليل Checkout من المصدر','success');
  }catch(e){window.showNotification?.(e.message||'تعذر تحديث تحليل Checkout','error')}
