@@ -8438,19 +8438,14 @@ setTimeout(function(){
     badge.style.display = n > 0 ? 'inline-block' : 'none';
   }
 
-  async function refreshUnseenOrdersBadge(){
+  function refreshUnseenOrdersBadge(list){
     if (ordersBadgeBusy) return;
-    const session = sessionToken();
-    const worker = orderWorker();
-    if (!session || !worker) return;
-
     ordersBadgeBusy = true;
     try {
-      const d = await ordersApi('list', {filters: {}});
-      const allOrders = Array.isArray(d.orders) ? d.orders : [];
+      const allOrders = Array.isArray(list) ? list : [];
       const seen = readSeenOrders();
 
-      // أول تشغيل: لا نعتبر الطلبات القديمة "جديدة".
+      // أول تشغيل: الطلبات الموجودة مسبقاً ليست "جديدة".
       if (!ordersSeenInitialized && !localStorage.getItem(ORDERS_SEEN_KEY)) {
         allOrders.forEach(o => seen.add(getOrderSeenId(o)));
         writeSeenOrders(seen);
@@ -8461,7 +8456,7 @@ setTimeout(function(){
 
       ordersSeenInitialized = true;
 
-      // إذا كان المستخدم داخل تبويب الطلبات، فالطلبات تم كشفها.
+      // إذا كان المستخدم داخل تبويب الطلبات، فالطلبات المعروضة مكشوفة.
       if (typeof currentTab !== 'undefined' && currentTab === 'orders') {
         allOrders.forEach(o => seen.add(getOrderSeenId(o)));
         writeSeenOrders(seen);
@@ -8471,8 +8466,6 @@ setTimeout(function(){
 
       const unseen = allOrders.filter(o => !seen.has(getOrderSeenId(o)));
       updateOrdersBadge(unseen.length);
-    } catch (e) {
-      console.warn('Orders badge refresh:', e);
     } finally {
       ordersBadgeBusy = false;
     }
@@ -8501,6 +8494,8 @@ setTimeout(function(){
     window.__smOrdersLocalReady=true;
     ordersCache=window.__smOrdersLocalData.slice();
     ordersPage=1;
+    // تحديث الشعار من الكاش المحلي فقط؛ لا يوجد Request إضافي للـ Worker.
+    refreshUnseenOrdersBadge(ordersCache);
     loadOrders(false);
   };
 })();
