@@ -8131,7 +8131,13 @@ setTimeout(function(){
     list.forEach(o=>{const s=String(o.status||'');if(s==='En attente')counts.pending++;if(s==='Confirmée')counts.confirmed++;if(s.includes('livraison'))counts.delivery++;if(s==='Livrée')counts.delivered++;if(s==='Retour')counts.cancelled++;});
     if(stats){Object.assign(counts,stats)}
     ['new','pending','confirmed','delivery','delivered','cancelled'].forEach(k=>{let e=document.getElementById('ordersStat'+k[0].toUpperCase()+k.slice(1));if(e)e.textContent=counts[k]||0});
-    const badge=document.getElementById('ordersMenuBadge');if(badge){badge.textContent=counts.new||0;badge.style.display=(counts.new||0)>0?'inline-block':'none'}
+    // الشعار الأصفر يُدار حصرياً بواسطة نظام الطلبات غير المكشوفة (Unseen Orders).
+    // لا نربطه بعدد الطلبات الجديدة حسب الحالة حتى لا نخلط بين New و Unseen.
+    // كما لا نرسل أي Request إضافي من هنا.
+    const badge=document.getElementById('ordersMenuBadge');
+    if(badge && typeof refreshUnseenOrdersBadge === 'function') {
+      // الحساب الحقيقي يتم من الكاش المحلي؛ لا نغيّر قيمته هنا.
+    }
     const body=document.getElementById('ordersTableBody');if(!body)return;
     const displayList=filterHiddenOrders(list);
     if(!displayList.length){const mode=document.getElementById('ordersVisibilityFilter')?.value||'visible';const msg=mode==='hidden'?'لا توجد طلبات مخفية.':'لا توجد طلبات مطابقة للبحث.';body.innerHTML=`<tr><td colspan="9" class="orders-empty"><i class="fas fa-inbox" style="font-size:28px;opacity:.35"></i><br>${msg}</td></tr>`;return}
